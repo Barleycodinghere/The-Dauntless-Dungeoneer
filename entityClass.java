@@ -62,15 +62,15 @@ public class Cleric extends playerCharacter {
     //subject to change
 
     @Override public void ability_num1(Entity target){
-        //healing word
+        // Healing word - give hp to target at the cost of mana
     }
 
     @Override public void ability_num2(Entity target){
-        //bless
+        // Bless - buff atk and damage ally at the cost of mana
     }
 
     @Override public void ability_num3(Entity target){
-        //guiding bolt
+        // Guiding bolt - do damage to target and lower their def
     }
 }
 
@@ -91,19 +91,19 @@ public class Warrior extends playerCharacter {
     @Override
     public void ability_num1(Entity target) {
         System.out.println(this.name + " uses Shield Bash!");
-        // Logic: damage + stun target
+        // Damage + stun target
     }
 
     @Override
     public void ability_num2(Entity target) {
         System.out.println(this.name + " uses Battle Cry!");
-        // Logic: buff this.atk
+        // Buff this.atk
     }
 
     @Override
     public void ability_num3(Entity target) {
         System.out.println(this.name + " uses Execute!");
-        // Logic: massive damage if target HP is low
+        // Massive damage if target HP is low (sub 30%)
     }
 }
 
@@ -124,18 +124,18 @@ public class Mage extends playerCharacter {
     @Override
     public void ability_num1(Entity target) {
         System.out.println(this.name + " casts Fireball!");
-        // Logic: High AoE or single target damage
+        // High AoE Damage at the cost of a huge amount of mana
     }
 
     @Override
     public void ability_num2(Entity target) {
-        System.out.println(this.name + " casts Frost Nova!");
-        // Logic: Lower target speed or freeze them
+        System.out.println(this.name + " casts Mana Shield!");
+        // Buff ac to become harder to hit 
     }
 
     @Override
     public void ability_num3(Entity target) {
-        System.out.println(this.name + " casts Arcane Intellect!");
-        // Logic: Buff mana or damage for self/ally
+        System.out.println(this.name + " casts Frost Nova!");
+        // Freeze 2 enemies (stunning them)
     }
 }
