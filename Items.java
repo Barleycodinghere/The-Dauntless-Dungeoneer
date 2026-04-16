@@ -1,10 +1,13 @@
 import java.util.*
 
-public abstract item(){
+public abstract class item(){
   private int ID;
   private int quantity;
   private String name;
 }
+public abstract void Equip(Entity user);
+public abstract void Unequip(Entity user);
+
 public item(int ID, String name, int quantity){
   this.ID = ID;
   this.quantity = quantity;
