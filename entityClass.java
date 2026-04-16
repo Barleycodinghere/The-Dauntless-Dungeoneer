@@ -32,6 +32,10 @@ public abstract class Entity {
         this.hp -= damage;
         System.out.println(this.name + " now has " + this.hp + " HP left");
     }
+        public void healDamage(int healing){
+        this.hp += healing;
+        System.out.println(this.name + "has healed" + this.healing);
+    }
 
     public static int rollD20(){ return new Random().nextInt(20) + 1; }
 }
@@ -63,6 +67,13 @@ public class Cleric extends playerCharacter {
 
     @Override public void ability_num1(Entity target){
         // Healing word - give hp to target at the cost of mana
+        if(this.mana >= 20){
+        target.healDamage(40);
+        this.mana -= 20;
+        }
+        else {
+            System.out.println("Not enough mana ):");
+        }
     }
 
     @Override public void ability_num2(Entity target){
