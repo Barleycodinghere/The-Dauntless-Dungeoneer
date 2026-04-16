@@ -14,14 +14,19 @@ public item(int ID, String name, int quantity){
 
 public class weapon extends item(int ID, String name, int quantity) {
   //int atkPlus;
-  int atk;
-  public void Attack(Entity user){
-    user.attack
+  int atkBonus;
+  //IDEA method for equip and unequip. the equip method adds the attack bonus and the unqueip method removes it
+  public void Equip(Entity user){
+    user.atk += atkBonus;
+  }
+  public void Unequip(Entity user){
+    //
   }
 }
 public class armor extends item(int ID,String name, int quantity) {
- //int defPlus;
- //int acPlus;
+ int defBonus;
+ int acBonus;
+public void Equip(
 }
 public class consumable extends item(int ID,String name, int quantity) {
   
