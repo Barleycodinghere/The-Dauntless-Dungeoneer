@@ -1,14 +1,14 @@
 import java.util.Random;
 
 public abstract class Entity {
-    protected String name;
-    protected int hp;
-    protected int mana;
-    protected int ac;
-    protected int speed;
-    protected int atk;
-    protected int def;
-    protected int damage;
+    private String name;
+    private int hp;
+    private int mana;
+    private int ac;
+    private int speed;
+    private int atk;
+    private int def;
+    private int damage;
 
     public Entity(String name, int hp, int mana, int ac, int speed, int atk, int def, int damage){
         this.name = name;
@@ -50,7 +50,7 @@ public abstract class PlayerCharacter extends Entity{
     public abstract void ability_num3(Entity target);
 }
 
-public class Cleric extends playerCharacter {
+public class Cleric extends PlayerCharacter {
     private static int baseHp = 80;
     private static int baseMana = 100;
     private static int baseAc = 10;
@@ -85,7 +85,7 @@ public class Cleric extends playerCharacter {
     }
 }
 
-public class Warrior extends playerCharacter {
+public class Warrior extends PlayerCharacter {
     private static int baseHp = 120;
     private static int baseMana = 50;
     private static int baseAc = 10;
@@ -118,7 +118,7 @@ public class Warrior extends playerCharacter {
     }
 }
 
-public class Mage extends playerCharacter {
+public class Mage extends PlayerCharacter {
     private static int baseHp = 50;
     private static int baseMana = 200;
     private static int baseAc = 10;
