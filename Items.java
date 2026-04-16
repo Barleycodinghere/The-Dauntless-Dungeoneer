@@ -2,5 +2,10 @@ import java.util.*
 
 public class item(){
   private int ID;
-  private boolean equipable;
+  private int type;
+  private int quantity;
+}
+
+public class weapon extends item(int ID, int quantity) {
+  
 }
