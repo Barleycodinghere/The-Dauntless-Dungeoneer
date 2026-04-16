@@ -32,7 +32,7 @@ public abstract class Entity {
         this.hp -= damage;
         System.out.println(this.name + " now has " + this.hp + " HP left");
     }
-        public void healDamage(int healing){
+    public void healDamage(int healing){
         this.hp += healing;
         System.out.println(this.name + "has healed" + this.healing);
     }
