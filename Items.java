@@ -1,23 +1,23 @@
 import java.util.*
 
 public abstract class item(){
-  private int ID;
+  private int itemId;
   private int quantity;
   private String name;
 }
 public abstract void Equip(Entity user);
 public abstract void Unequip(Entity user);
 
-public item(int ID, String name, int quantity){
-  this.ID = ID;
+public item(int itemId, String name, int quantity){
+  this.itemId = itemId;
   this.quantity = quantity;
   this.name = name;
   
 }
 
-public class weapon extends item(int ID, String name, int quantity) {
+public class weapon extends item(int itemId, String name, int quantity) {
   //int atkPlus;
-  int atkBonus;
+  private int atkBonus;
   //IDEA method for equip and unequip. the equip method adds the attack bonus and the unqueip method removes it
   @Override public void Equip(Entity user){
     user.atk += atkBonus;
@@ -26,11 +26,11 @@ public class weapon extends item(int ID, String name, int quantity) {
    //
   }
 }
-public class armor extends item(int ID,String name, int quantity) {
- int defBonus;
- int acBonus;
+public class armor extends item(int itemId,String name, int quantity) {
+  private int defBonus;
+  private int acBonus;
 public void Equip(
 }
-public class consumable extends item(int ID,String name, int quantity) {
+public class consumable extends item(int itemId,String name, int quantity) {
   
 }
