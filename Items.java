@@ -19,11 +19,11 @@ public class weapon extends item(int ID, String name, int quantity) {
   //int atkPlus;
   int atkBonus;
   //IDEA method for equip and unequip. the equip method adds the attack bonus and the unqueip method removes it
-  public void Equip(Entity user){
+  @Override public void Equip(Entity user){
     user.atk += atkBonus;
   }
-  public void Unequip(Entity user){
-    //
+  @Override public void Unequip(Entity user){
+   //
   }
 }
 public class armor extends item(int ID,String name, int quantity) {
