@@ -19,7 +19,7 @@ The Dauntless Dungeoneer is a Java-based game project developed using libGDX. It
 * Clone the repository:
 
 ```
-git clone https://github.com/your-username/dauntless-dungeoneer.git
+git clone https://github.com/Barleycodinghere/The-Dauntless-Dungeoneer.git
 ```
 
 * Navigate into the project directory:
