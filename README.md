@@ -1,33 +1,68 @@
-# TheDauntlessDungeoneer
+# The Dauntless Dungeoneer
 
-A [libGDX](https://libgdx.com/) project generated with [gdx-liftoff](https://github.com/libgdx/gdx-liftoff).
+A turn-based dungeon crawler built with libGDX, focused on strategic combat and a flexible entity-component architecture.
 
-This project was generated with a template including simple application launchers and an `ApplicationAdapter` extension that draws libGDX logo.
+## Description
 
-## Platforms
+The Dauntless Dungeoneer is a Java-based game project developed using libGDX. It features a turn-based combat system where players choose a class and engage in strategic battles against enemies. The project is structured using a hybrid Entity Component System (ECS) architecture, allowing for modular and scalable game design. Entities act as containers, components define data such as stats, and higher-level classes like Player and Enemy provide structure and default behavior.
 
-- `core`: Main module with the application logic shared by all platforms.
-- `lwjgl3`: Primary desktop platform using LWJGL3; was called 'desktop' in older docs.
+## Getting Started
 
-## Gradle
+### Dependencies
 
-This project uses [Gradle](https://gradle.org/) to manage dependencies.
-The Gradle wrapper was included, so you can run Gradle tasks using `gradlew.bat` or `./gradlew` commands.
-Useful Gradle tasks and flags:
+* Java 17 or higher
+* Gradle (wrapper included in project)
+* Compatible OS (Windows, macOS, or Linux)
 
-- `--continue`: when using this flag, errors will not stop the tasks from running.
-- `--daemon`: thanks to this flag, Gradle daemon will be used to run chosen tasks.
-- `--offline`: when using this flag, cached dependency archives will be used.
-- `--refresh-dependencies`: this flag forces validation of all dependencies. Useful for snapshot versions.
-- `build`: builds sources and archives of every project.
-- `cleanEclipse`: removes Eclipse project data.
-- `cleanIdea`: removes IntelliJ project data.
-- `clean`: removes `build` folders, which store compiled classes and built archives.
-- `eclipse`: generates Eclipse project data.
-- `idea`: generates IntelliJ project data.
-- `lwjgl3:jar`: builds application's runnable jar, which can be found at `lwjgl3/build/libs`.
-- `lwjgl3:run`: starts the application.
-- `test`: runs unit tests (if any).
+### Installing
 
-Note that most tasks that are not specific to a single project can be run with `name:` prefix, where the `name` should be replaced with the ID of a specific project.
-For example, `core:clean` removes `build` folder only from the `core` project.
+* Clone the repository:
+
+```
+git clone https://github.com/your-username/dauntless-dungeoneer.git
+```
+
+* Navigate into the project directory:
+
+```
+cd dauntless-dungeoneer
+```
+
+* No additional setup required since the Gradle wrapper is included.
+
+### Executing program
+
+* Run the desktop version using Gradle:
+
+On macOS/Linux:
+
+```
+./gradlew lwjgl3:run
+```
+
+On Windows:
+
+```
+gradlew.bat lwjgl3:run
+```
+
+## Help
+
+If Gradle dependencies fail to load or the project does not run:
+
+```
+./gradlew clean build
+```
+
+If using an IDE, ensure the project is imported as a Gradle project and dependencies are synced.
+
+## Authors
+
+Team Five XD
+
+## Version History
+
+* 0.1
+
+  * Initial libGDX project setup
+  * Refactored codebase into Hybrid ECS-style architecture
