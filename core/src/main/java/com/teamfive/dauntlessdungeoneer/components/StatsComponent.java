@@ -41,6 +41,9 @@ public class StatsComponent implements Component {
     public void takeDamage(int amount) {
         currentHP = Math.max(0, currentHP - amount);
     }
+    public void heal(int amount) {
+        currentHP = Math.min(currentHP + amount, maxHP);
+    }
 
     public void useMana(int amount) {
         currentMana = Math.max(0, currentMana - amount);
