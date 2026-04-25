@@ -1,5 +1,6 @@
 package com.teamfive.dauntlessdungeoneer.combat.managers;
 
+import com.teamfive.dauntlessdungeoneer.combat.actions.CombatAction;
 import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.results.CombatResult;
 import com.teamfive.dauntlessdungeoneer.combat.systems.CombatResolver;
@@ -31,16 +32,17 @@ public class CombatManager {
         return turnManager.getCurrentCombatant();
     }
 
-    public CombatResult performAttack(Entity attacker, Entity target) {
+    public CombatResult performAction(CombatAction action) {
         if (!combatActive) {
             return null;
         }
 
-        CombatResult result = combatResolver.resolveAttack(attacker, target);
+        CombatResult result = combatResolver.resolveAction(action);
 
         checkCombatEnd();
 
-        turnManager.advanceTurn();
+        if (combatActive)
+            turnManager.advanceTurn();
 
         return result;
     }
@@ -52,7 +54,7 @@ public class CombatManager {
         for (Entity e : combatants) {
             CombatantComponent combatant = e.getComponent(CombatantComponent.class);
 
-            if (combatant != null || !combatant.isAlive) continue;
+            if (combatant == null || !combatant.isAlive) continue;
 
             if ( combatant.team == CombatantComponent.Team.PLAYER) {
                 playerAlive = true;
