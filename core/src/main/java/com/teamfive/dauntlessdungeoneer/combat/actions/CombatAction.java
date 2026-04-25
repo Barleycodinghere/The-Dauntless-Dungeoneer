@@ -1,5 +1,7 @@
 package com.teamfive.dauntlessdungeoneer.combat.actions;
 
+import com.teamfive.dauntlessdungeoneer.combat.results.CombatResult;
+import com.teamfive.dauntlessdungeoneer.combat.systems.CombatResolver;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 
 public abstract class CombatAction {
@@ -20,4 +22,6 @@ public abstract class CombatAction {
         this.target = target;
         this.targetType = targetType;
     }
+
+    public abstract CombatResult resolve(CombatResolver resolver);
 }

@@ -27,37 +27,38 @@ public class CombatResolver {
     }
 
     public CombatResult resolveAction(CombatAction action) {
+        return action.resolve(this);
+    }
+
+    public CombatResult resolveAttack(AttackAction action) {
 
         Entity attacker = action.actor;
         Entity target = action.target;
 
-        if (action instanceof AttackAction) {
-            // Validate target
-            if (!targetingSystem.isValidEnemyTarget(attacker, target)) {
-                return new CombatResult(attacker, target, false, 0);
-            }
-
-            // Accuracy check
-            HitResult hitResult = accuracySystem.determineHit(attacker, target);
-
-            if (!hitResult.didHit) {
-                return new CombatResult(attacker, target, false, 0);
-            }
-
-            // Damage calculation
-            DamageResult damageResult = damageSystem.calculateDamage(attacker, target);
-
-            // Apply damage
-            healthSystem.applyDamage(target, damageResult.finalDamage);
-
-            // Return result
-            return new CombatResult(
-                attacker,
-                target,
-                true,
-                damageResult.finalDamage
-            );
+        // Validate target
+        if (!targetingSystem.isValidEnemyTarget(attacker, target)) {
+            return new CombatResult(attacker, target, false, 0);
         }
-        return new CombatResult(attacker, target, false, 0);
+
+        // Accuracy check
+        HitResult hitResult = accuracySystem.determineHit(attacker, target);
+
+        if (!hitResult.didHit) {
+            return new CombatResult(attacker, target, false, 0);
+        }
+
+        // Damage calculation
+        DamageResult damageResult = damageSystem.calculateDamage(attacker, target);
+
+        // Apply damage
+        healthSystem.applyDamage(target, damageResult.finalDamage);
+
+        // Return result
+        return new CombatResult(
+            attacker,
+            target,
+            true,
+            damageResult.finalDamage
+        );
     }
 }
