@@ -8,6 +8,7 @@ import java.util.List;
 public class InventoryComponent implements Component {
 
     private List<Item> items = new ArrayList<>();
+    private int itemSlots
 
     public void addItem(Item item) {
         items.add(item);
