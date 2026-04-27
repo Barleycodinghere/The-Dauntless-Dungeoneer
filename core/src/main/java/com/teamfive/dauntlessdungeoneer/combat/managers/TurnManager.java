@@ -18,6 +18,8 @@ public class TurnManager {
         turnOrder.addAll(combatants);
 
         turnOrder.sort(Comparator.comparingInt(this::getSpeed).reversed());
+
+        currentTurnIndex = 0;
     }
 
     public Entity getCurrentCombatant() {

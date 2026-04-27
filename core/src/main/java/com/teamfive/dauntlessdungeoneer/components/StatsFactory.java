@@ -8,8 +8,8 @@ public class StatsFactory {
             case DPS -> new StatsComponent(
                 80,     // HP
                 50,         // Mana
-                5,          // AC
-                10,         // Speed
+                60,          // AC
+                20,         // Speed
                 15,         // ATK
                 5           // DEF
             );

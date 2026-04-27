@@ -2,9 +2,11 @@ package com.teamfive.dauntlessdungeoneer.combat.systems;
 
 import com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.CombatAction;
+import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.results.CombatResult;
 import com.teamfive.dauntlessdungeoneer.combat.results.DamageResult;
 import com.teamfive.dauntlessdungeoneer.combat.results.HitResult;
+import com.teamfive.dauntlessdungeoneer.components.StatsComponent;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 
 public class CombatResolver {
@@ -35,16 +37,34 @@ public class CombatResolver {
         Entity attacker = action.actor;
         Entity target = action.target;
 
+        final int targetHpBefore = target.getComponent(StatsComponent.class).getCurrentHP();
+
         // Validate target
         if (!targetingSystem.isValidEnemyTarget(attacker, target)) {
-            return new CombatResult(attacker, target, false, 0);
+            return new CombatResult(
+                attacker,
+                target,
+                false,
+                0,
+                targetHpBefore,
+                targetHpBefore,
+                false
+            );
         }
 
         // Accuracy check
         HitResult hitResult = accuracySystem.determineHit(attacker, target);
 
         if (!hitResult.didHit) {
-            return new CombatResult(attacker, target, false, 0);
+            return new CombatResult(
+                attacker,
+                target,
+                false,
+                0,
+                targetHpBefore,
+                targetHpBefore,
+                false
+            );
         }
 
         // Damage calculation
@@ -52,13 +72,18 @@ public class CombatResolver {
 
         // Apply damage
         healthSystem.applyDamage(target, damageResult.finalDamage);
+        final int targetHpAfter = target.getComponent(StatsComponent.class).getCurrentHP();
+        final boolean targetDefeated = !target.getComponent(CombatantComponent.class).isAlive;
 
         // Return result
         return new CombatResult(
             attacker,
             target,
             true,
-            damageResult.finalDamage
-        );
+            damageResult.finalDamage,
+            targetHpBefore,
+            targetHpAfter,
+            targetDefeated
+            );
     }
 }

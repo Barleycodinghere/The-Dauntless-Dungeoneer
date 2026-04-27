@@ -39,7 +39,7 @@ public class HealthSystem {
         return combatant == null || !combatant.isAlive;
     }
 
-    public boolean isAliveA(Entity entity) {
+    public boolean isAlive(Entity entity) {
         CombatantComponent combatant = entity.getComponent(CombatantComponent.class);
         return combatant != null && combatant.isAlive;
     }

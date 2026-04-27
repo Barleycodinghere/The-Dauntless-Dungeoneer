@@ -4,11 +4,13 @@ import java.util.Map;
 
 public class Entity {
 
+    private static int nextId = 0;
+
     private final int id;
     private final Map<Class<? extends Component>, Component> components;
 
-    public Entity(int id) {
-        this.id = id;
+    public Entity() {
+        this.id = nextId++;
         this.components = new HashMap<>();
     }
 

@@ -4,10 +4,11 @@ import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 import com.teamfive.dauntlessdungeoneer.components.*;
 
 public class Player extends Entity {
+
     private final PlayerClass playerClass;
 
-    public Player(int id, PlayerClass playerClass) {
-        super(id);
+    public Player( PlayerClass playerClass) {
+        super();
         this.playerClass = playerClass;
 
         // Default components for a player
