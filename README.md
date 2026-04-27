@@ -60,9 +60,3 @@ If using an IDE, ensure the project is imported as a Gradle project and dependen
 
 Team Five XD
 
-## Version History
-
-* 0.1
-
-  * Initial libGDX project setup
-  * Refactored codebase into Hybrid ECS-style architecture
