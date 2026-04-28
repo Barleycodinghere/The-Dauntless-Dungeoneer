@@ -7,11 +7,9 @@ import java.util.List;
 
 public class InventoryComponent implements Component {
 
-    private List<Item> items = new ArrayList<>();
-    private int itemSlots
+    private List<Item> items = new ArrayList<>(8);
 
-    public void addItem(Item item) {
-        items.add(item);
+    public void addItem(Item item) {items.add(item);
     }
 
     public void removeItem(Item item) {
