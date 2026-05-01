@@ -14,7 +14,7 @@ import com.badlogic.gdx.math.Vector3;
 
 public class MainMenuScreen implements Screen{
 
-	final Main game;
+	final GameMain game;
 	//Texture playButtonTexture;
 	//Sprite playButtonSprite;
 	//Rectangle playButtonBounds;
@@ -23,7 +23,7 @@ public class MainMenuScreen implements Screen{
 	private OrthographicCamera camera;
 	
 	
-	public MainMenuScreen(final Main game) {
+	public MainMenuScreen(final GameMain game) {
 		
 		this.game = game;
 		
