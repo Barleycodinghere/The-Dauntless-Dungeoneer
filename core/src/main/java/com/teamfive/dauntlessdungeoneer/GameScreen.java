@@ -14,7 +14,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class GameScreen implements Screen {
 
-		final Main game;
+		final GameMain game;
 		
 		Texture backgroundTexture;
 		Texture DPSTexture;
@@ -34,7 +34,7 @@ public class GameScreen implements Screen {
 		
 
 
-	public GameScreen(final Main game) {
+	public GameScreen(final GameMain game) {
 		this.game = game;
 		
 		//load images for background, DPS, tank, and support
