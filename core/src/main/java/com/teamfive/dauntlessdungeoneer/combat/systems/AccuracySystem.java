@@ -10,15 +10,15 @@ public class AccuracySystem {
 
     private final Random random = new Random();
 
-    public HitResult determineHit(Entity attacker, Entity target) {
+    public HitResult determineHit(Entity attacker, Entity defender) {
         StatsComponent attackerStats = attacker.getComponent(StatsComponent.class);
-        StatsComponent targetStats = target.getComponent(StatsComponent.class);
+        StatsComponent defenderStats = defender.getComponent(StatsComponent.class);
 
-        if (attackerStats == null || targetStats == null) {
+        if (attackerStats == null || defenderStats == null) {
             return new HitResult(false, 0);
         }
 
-        int hitChance = attackerStats.getAC() - targetStats.getSpeed();
+        int hitChance = attackerStats.getAC() - defenderStats.getSpeed();
 
         // Keeps hit chance reasonable -- adjust as needed
         int min = 5;
