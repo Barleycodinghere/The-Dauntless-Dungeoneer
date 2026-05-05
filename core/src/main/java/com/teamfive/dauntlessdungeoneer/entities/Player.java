@@ -13,7 +13,7 @@ public class Player extends Entity {
 
         // Default components for a player
         addComponent(StatsComponent.class, StatsFactory.createStats(playerClass));
-        // This ass ths inventory for a player
+        // This adds inventory for a player
         addComponent(InventoryComponent.class, new InventoryComponent());
     }
 
