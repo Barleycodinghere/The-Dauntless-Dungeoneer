@@ -11,6 +11,9 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.graphics.Color;
 import com.teamfive.dauntlessdungeoneer.screens.SettingsScreen;
+import com.teamfive.dauntlessdungeoneer.entities.Team;
+import com.teamfive.dauntlessdungeoneer.entities.Player;
+import com.teamfive.dauntlessdungeoneer.components.PlayerClass;
 
 public class MainMenuScreen implements Screen {
     private final GameMain game;
@@ -52,7 +55,20 @@ public class MainMenuScreen implements Screen {
         playButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                game.setScreen(new GameplayScreen(game)); // This switches screens!
+                //creates default team
+                //Team playerTeam = Team.createDefaultPlayerTeam();
+                Team playerTeam = new Team();
+                playerTeam.addMember(new Player(PlayerClass.TANK));
+                playerTeam.addMember(new Player(PlayerClass.DPS));
+                playerTeam.addMember(new Player(PlayerClass.DPS));
+                playerTeam.addMember(new Player(PlayerClass.SUPPORT));
+
+                //Manually creates Enemy Team
+                Team enemyTeam = new Team();
+                enemyTeam.addMember(new Player(PlayerClass.DPS));
+                enemyTeam.addMember(new Player(PlayerClass.SUPPORT));
+
+                game.setScreen(new GameplayScreen(game, playerTeam, enemyTeam)); // This switches screens!
             }
         });
 

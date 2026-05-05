@@ -10,7 +10,6 @@ public class GameMain extends Game {
 
     @Override
     public void create() {
-        // Load the professional skin once
         skin = new Skin(Gdx.files.internal("ui/uiskin.json"));
 
         // Switch to the Main Menu

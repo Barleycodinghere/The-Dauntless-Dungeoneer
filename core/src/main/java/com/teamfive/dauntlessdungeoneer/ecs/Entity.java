@@ -1,8 +1,9 @@
 package com.teamfive.dauntlessdungeoneer.ecs;
 import java.util.HashMap;
 import java.util.Map;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 
-public class Entity {
+public class Entity extends Actor{
 
     private static int nextId = 0;
 
