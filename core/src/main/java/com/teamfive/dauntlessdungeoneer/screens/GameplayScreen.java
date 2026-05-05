@@ -34,11 +34,14 @@ import com.teamfive.dauntlessdungeoneer.combat.systems.DamageSystem;
 import com.teamfive.dauntlessdungeoneer.combat.systems.HealthSystem;
 import com.teamfive.dauntlessdungeoneer.combat.systems.TargetingSystem;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
+import com.teamfive.dauntlessdungeoneer.ui.CombatAreaView;
+import com.teamfive.dauntlessdungeoneer.ui.CombatLogBox;
+import com.teamfive.dauntlessdungeoneer.ui.SkillPanel;
 
 public class GameplayScreen implements Screen {
     private final GameMain game;
     private Stage stage;
-    private Table combatArea;
+    private CombatAreaView combatAreaView;
     private Table root;
 
     private Team playerTeam;
@@ -46,8 +49,8 @@ public class GameplayScreen implements Screen {
     private Entity currentTarget;
     private Entity lastActor;
     private CombatManager combatManager;
-    private Label statusLabel;
-    private TextButton attackButton;
+    private CombatLogBox combatLogBox;
+    private SkillPanel skillPanel;
 
     private ProgressBar.ProgressBarStyle hpStyle;
     private ProgressBar.ProgressBarStyle manaStyle;
@@ -82,117 +85,32 @@ public class GameplayScreen implements Screen {
         manaStyle.background.setMinHeight(20);
         manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
         manaStyle.knobBefore.setMinHeight(20);
-        
-        combatArea = new Table();
-        refreshCombatArea();
+
+        combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
+            currentTarget = selectedTarget;
+            addCombatLog("Target selected: " + selectedTarget.getPlayerClass() + ". Press Basic Attack.");
+        });
+        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
+            currentTarget = selectedTarget;
+            addCombatLog("Target selected: " + selectedTarget.getPlayerClass() + ". Press Basic Attack.");
+        });
+
+        skillPanel = new SkillPanel(game.skin, skillIndex -> {
+            if (skillIndex == 1) {
+                tryPerformPlayerAttack();
+            } else {
+                addCombatLog("Skill " + skillIndex + " is not ready yet.");
+            }
+        });
+
+        combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
 
         Table uiArea = new Table();
-        TextButton.TextButtonStyle abilityStyle = new TextButton.TextButtonStyle(game.skin.get(TextButton.TextButtonStyle.class));
-        abilityStyle.up = game.skin.newDrawable("white", Color.valueOf("#787276"));
-        abilityStyle.fontColor = Color.WHITE;
+        uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
+        uiArea.add(combatLogBox.getActor()).right().top().pad(10);
 
-        for (int i = 1; i <= 4; i++) {
-            final int skillIndex = i;
-            TextButton skillBtn = new TextButton(skillIndex == 1 ? "Basic Attack" : "Skill " + skillIndex, abilityStyle);
-
-            if (skillIndex == 1) {
-                attackButton = skillBtn;
-            } else {
-                skillBtn.setDisabled(true); // Only basic attack is active for now
-            }
-
-            skillBtn.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    if (skillIndex == 1) {
-                        tryPerformPlayerAttack();
-                    } else {
-                        setStatus("Skill " + skillIndex + " is not ready yet.");
-                    }
-                }
-            });
-            uiArea.add(skillBtn).width(120).height(50).pad(20);
-        }
-
-        statusLabel = new Label("Choose an enemy target and press Basic Attack.", game.skin);
-        statusLabel.setAlignment(Align.center);
-
-        root.add(combatArea).expand().center().row();
-        root.add(uiArea).height(150).fillX().padBottom(10).row();
-        root.add(statusLabel).colspan(4).fillX().padBottom(20);
-    }
-
-    private void refreshCombatArea() {
-        combatArea.clearChildren();
-
-        for (Player hero : playerTeam.getMembers()) {
-            combatArea.add(createCharacterUnit(hero, false)).pad(20);
-        }
-
-        combatArea.add().width(100);
-
-        for (Player enemy : enemyTeam.getMembers()) {
-            combatArea.add(createCharacterUnit(enemy, true)).pad(20);
-        }
-    }
-
-    // ADDED: Helper method that builds the "Unit" (Button + 2 Bars)
-    private Table createCharacterUnit(final Player player, boolean isEnemy) {
-        Table unitGroup = new Table();
-        String unitID = "unit_" + player.getId();
-
-        // 1. Character Button (Displays "DPS", "TANK", etc.)
-        String label = isEnemy ? "ENEMY\n" + player.getPlayerClass() : player.getPlayerClass().toString();
-        final TextButton btn = new TextButton(label, game.skin);
-
-        // 2. Health Bar
-        ProgressBar hpBar = new ProgressBar(0, 100, 1, false, hpStyle);
-        hpBar.setName(unitID + "_hpBar");
-        Label hpLabel = new Label("0/0", game.skin);
-        hpLabel.setName(unitID + "_hpLabel");
-        hpLabel.setAlignment(Align.center);
-
-        Stack hpStack = new Stack();
-        hpStack.add(hpBar);
-        hpStack.add(hpLabel);
-
-        // 3. Mana Bar Stack (Height increased to 18)
-        ProgressBar manaBar = new ProgressBar(0, 100, 1, false, manaStyle);
-        manaBar.setName(unitID + "_manaBar");
-        Label manaLabel = new Label("0/0", game.skin);
-        manaLabel.setName(unitID + "_manaLabel");
-        manaLabel.setAlignment(Align.center);
-
-        Stack manaStack = new Stack(); 
-        manaStack.add(manaBar);
-        manaStack.add(manaLabel);
-
-        // Layout: Stack them on top of each other
-        unitGroup.add(btn).size(100, 100).row();
-        unitGroup.add(hpStack).width(120).height(20).padTop(10).row(); 
-        unitGroup.add(manaStack).width(120).height(20).padTop(5).row();
-
-        // Only add selection logic to enemy buttons
-        if (isEnemy) {
-            btn.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    currentTarget = player; // Set this enemy as target
-                    for (Actor unit : combatArea.getChildren()) {
-                        if (unit instanceof Table) {
-                            Actor potentialBtn = ((Table) unit).getChildren().first();
-                            potentialBtn.setColor(Color.WHITE);
-                        }
-                    }
-                    btn.setColor(Color.YELLOW); // Highlight selected enemy Yellow
-                    Player targetPlayer = (Player) currentTarget;
-                    setStatus("Target selected: " + targetPlayer.getPlayerClass() + ". Press Basic Attack.");
-                    System.out.println("Targeted: " + targetPlayer.getPlayerClass());
-                }
-            });
-        }
-
-        return unitGroup;
+        root.add(combatAreaView.getRoot()).expand().center().row();
+        root.add(uiArea).height(220).fillX().padBottom(20);
     }
 
     private void updatePlayerUI(Player player) {
@@ -241,13 +159,13 @@ public class GameplayScreen implements Screen {
                 if (currentActor != null && currentActor.getComponent(CombatantComponent.class).team == CombatantComponent.Team.ENEMY) {
                     performEnemyTurn(currentActor);
                 } else {
-                    setStatus("Player turn: choose a target and use Basic Attack.");
+                    addCombatLog("Player turn: choose a target and use Basic Attack.");
                 }
             }
         }
 
-        if (attackButton != null) {
-            attackButton.setDisabled(!isPlayerTurn() || !combatManager.isCombatActive());
+        if (skillPanel != null) {
+            skillPanel.setBasicAttackEnabled(isPlayerTurn() && combatManager.isCombatActive());
         }
 
         stage.act(delta);
@@ -300,45 +218,52 @@ public class GameplayScreen implements Screen {
 
     private void tryPerformPlayerAttack() {
         if (!combatManager.isCombatActive()) {
-            setStatus("Combat has ended.");
+            addCombatLog("Combat has ended.");
             return;
         }
 
         if (!isPlayerTurn()) {
-            setStatus("It is not your turn yet.");
+            addCombatLog("It is not your turn yet.");
             return;
         }
 
         if (currentTarget == null) {
-            setStatus("Select a target before attacking.");
+            addCombatLog("Select a target before attacking.");
             return;
         }
 
         Entity attacker = combatManager.getCurrentCombatant();
         if (attacker == null) {
-            setStatus("No attacker available.");
+            addCombatLog("No attacker available.");
             return;
         }
 
         CombatResult result = combatManager.performAction(new AttackAction(attacker, currentTarget));
 
         if (result == null) {
-            setStatus("Could not perform attack.");
+            addCombatLog("Could not perform attack.");
             return;
         }
 
+        Player defenderPlayer = (Player) result.defender;
+        String attackerName = ((Player) attacker).getPlayerClass().toString();
+        String defenderName = defenderPlayer.getPlayerClass().toString();
+
         if (!result.didHit) {
-            setStatus("Basic Attack missed " + ((Player) result.defender).getPlayerClass() + "!");
+            addCombatLog("Player " + attackerName + " attacked " + defenderName + " but missed.");
         } else {
-            setStatus("Basic Attack dealt " + result.damageDealt + " damage to " + ((Player) result.defender).getPlayerClass() + ".");
+            addCombatLog("Player " + attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage.");
         }
 
         if (result.targetDefeated) {
-            setStatus(((Player) result.defender).getPlayerClass() + " was defeated!");
+            addCombatLog("Player " + attackerName + " defeated " + defenderName + "!");
         }
 
         clearTargetSelection();
-        refreshCombatArea();
+        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
+            currentTarget = selectedTarget;
+            addCombatLog("Target selected: " + selectedTarget.getPlayerClass() + ". Press Basic Attack.");
+        });
     }
 
     private void performEnemyTurn(Entity enemy) {
@@ -351,7 +276,7 @@ public class GameplayScreen implements Screen {
         }
 
         if (candidates.size == 0) {
-            setStatus("All players are defeated.");
+            addCombatLog("All players are defeated.");
             return;
         }
 
@@ -359,37 +284,43 @@ public class GameplayScreen implements Screen {
         CombatResult result = combatManager.performAction(new AttackAction(enemy, target));
 
         if (result == null) {
-            setStatus("Enemy action failed.");
+            addCombatLog("Enemy action failed.");
             return;
         }
 
+        String enemyName = "Enemy";
+        if (enemy instanceof Player) {
+            enemyName = ((Player) enemy).getPlayerClass().toString();
+        }
+        String targetName = target.getPlayerClass().toString();
+
         if (!result.didHit) {
-            setStatus("Enemy missed " + target.getPlayerClass() + "!");
+            addCombatLog(enemyName + " tried to attack " + targetName + " but missed.");
         } else {
-            setStatus("Enemy hit " + target.getPlayerClass() + " for " + result.damageDealt + " damage.");
+            addCombatLog(enemyName + " attacked " + targetName + " for " + result.damageDealt + " damage.");
         }
 
         if (result.targetDefeated) {
-            setStatus(target.getPlayerClass() + " was defeated by the enemy.");
+            addCombatLog(targetName + " was defeated by " + enemyName + ".");
         }
 
         clearTargetSelection();
-        refreshCombatArea();
+        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
+            currentTarget = selectedTarget;
+            addCombatLog("Target selected: " + selectedTarget.getPlayerClass() + ". Press Basic Attack.");
+        });
     }
 
     private void clearTargetSelection() {
         currentTarget = null;
-        for (Actor unit : combatArea.getChildren()) {
-            if (unit instanceof Table) {
-                Actor potentialBtn = ((Table) unit).getChildren().first();
-                potentialBtn.setColor(Color.WHITE);
-            }
+        if (combatAreaView != null) {
+            combatAreaView.clearSelection();
         }
     }
 
-    private void setStatus(String message) {
-        if (statusLabel != null) {
-            statusLabel.setText(message);
+    private void addCombatLog(String message) {
+        if (combatLogBox != null) {
+            combatLogBox.addEntry(message);
         }
     }
 

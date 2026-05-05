@@ -1,5 +1,6 @@
 package com.teamfive.dauntlessdungeoneer.combat.systems;
 
+import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.results.HitResult;
 import com.teamfive.dauntlessdungeoneer.components.StatsComponent;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
@@ -20,16 +21,20 @@ public class AccuracySystem {
 
         int hitChance = attackerStats.getAC() - targetStats.getSpeed();
 
+        CombatantComponent attackerCombatant = attacker.getComponent(CombatantComponent.class);
+        if (attackerCombatant != null && attackerCombatant.team == CombatantComponent.Team.PLAYER) {
+            hitChance += 15; // Give player characters a better chance to hit
+        }
+
         // Keeps hit chance reasonable -- adjust as needed
-        int min = 5;
-        int max = 95;
-        hitChance = clamp(hitChance,min,max);
+        int min = 10;
+        int max = 98;
+        hitChance = clamp(hitChance, min, max);
 
-        int roll =  random.nextInt((max - min) + 1) + min;
-
+        int roll = random.nextInt((max - min) + 1) + min;
         boolean didHit = roll <= hitChance;
 
-        return new HitResult(didHit,hitChance);
+        return new HitResult(didHit, hitChance);
     }
 
     private int clamp(int val, int min, int max) {
