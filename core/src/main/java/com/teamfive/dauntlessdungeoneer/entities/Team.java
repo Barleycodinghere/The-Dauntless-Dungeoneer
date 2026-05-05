@@ -19,6 +19,7 @@ public class Team {
         Team team = new Team();
         team.addMember(new Player(PlayerClass.TANK));
         team.addMember(new Player(PlayerClass.DPS));
+        team.addMember(new Player(PlayerClass.DPS));
         team.addMember(new Player(PlayerClass.SUPPORT));
         return team;
     }
