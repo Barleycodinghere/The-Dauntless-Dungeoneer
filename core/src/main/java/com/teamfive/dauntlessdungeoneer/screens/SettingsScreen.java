@@ -52,7 +52,7 @@ public class SettingsScreen implements Screen {
             public void changed(ChangeEvent event, Actor actor) {
             if (Gdx.graphics.isFullscreen()) {
                 // Switch to a default windowed resolution
-                Gdx.graphics.setWindowedMode(1280, 720);
+                Gdx.graphics.setWindowedMode(1600, 900);
             } else {
                 // Switch to the monitor's current display mode (native resolution)
                 Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
@@ -66,11 +66,11 @@ public class SettingsScreen implements Screen {
                 int screenWidth = Gdx.graphics.getDisplayMode().width;
                 int screenHeight = Gdx.graphics.getDisplayMode().height;
 
-                if (Gdx.graphics.isFullscreen()) {
-                    Gdx.graphics.setWindowedMode(1280, 720); 
+                if (Gdx.graphics.getWidth() >= screenWidth) {
+                    Gdx.graphics.setWindowedMode(1600, 900);
+                } else {
+                    Gdx.graphics.setWindowedMode(screenWidth, screenHeight - 70);
                 }
-
-                Gdx.graphics.setWindowedMode(screenWidth, screenHeight - 70);
             }
         });
 
