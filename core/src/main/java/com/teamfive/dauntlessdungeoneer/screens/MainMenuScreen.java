@@ -14,6 +14,7 @@ import com.teamfive.dauntlessdungeoneer.screens.SettingsScreen;
 import com.teamfive.dauntlessdungeoneer.entities.Team;
 import com.teamfive.dauntlessdungeoneer.entities.Player;
 import com.teamfive.dauntlessdungeoneer.components.PlayerClass;
+import com.teamfive.dauntlessdungeoneer.components.MonsterClass;
 
 public class MainMenuScreen implements Screen {
     private final GameMain game;
@@ -65,8 +66,8 @@ public class MainMenuScreen implements Screen {
 
                 //Manually creates Enemy Team
                 Team enemyTeam = new Team();
-                enemyTeam.addMember(new Player(PlayerClass.GOBLIN));
-                enemyTeam.addMember(new Player(PlayerClass.DOG));
+                enemyTeam.addMember(new Player(MonsterClass.GOBLIN));
+                enemyTeam.addMember(new Player(MonsterClass.DOG));
 
                 game.setScreen(new GameplayScreen(game, playerTeam, enemyTeam)); // This switches screens!
             }

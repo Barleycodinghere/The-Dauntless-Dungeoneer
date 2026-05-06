@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.FireballAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.MagicMissileAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.HealAction;
+import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.RecoverAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.HeavyAttackAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.CleaveAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.BlockAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.SmiteAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.MassHealAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.SupportHealAction;
+import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.HealAction;
 import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.managers.CombatManager;
 import com.teamfive.dauntlessdungeoneer.combat.managers.TurnManager;
@@ -113,27 +113,27 @@ public class GameplayScreen implements Screen {
             if (skillIndex == 1) {
                 tryPerformPlayerAttack();
             } else if (skillIndex == 2) {
-                if (player.getPlayerClass() == PlayerClass.DPS) {
+                if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
                     tryPerformFireball();
-                } else if (player.getPlayerClass() == PlayerClass.TANK) {
+                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
                     tryPerformHeavyAttack();
-                } else if (player.getPlayerClass() == PlayerClass.SUPPORT) {
+                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
                     tryPerformSmite();
                 }
             } else if (skillIndex == 3) {
-                if (player.getPlayerClass() == PlayerClass.DPS) {
+                if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
                     tryPerformMagicMissile();
-                } else if (player.getPlayerClass() == PlayerClass.TANK) {
+                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
                     tryPerformCleave();
-                } else if (player.getPlayerClass() == PlayerClass.SUPPORT) {
+                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
                     tryPerformMassHeal();
                 }
             } else if (skillIndex == 4) {
-                if (player.getPlayerClass() == PlayerClass.DPS) {
+                if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
                     tryPerformHeal();
-                } else if (player.getPlayerClass() == PlayerClass.TANK) {
+                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
                     tryPerformBlock();
-                } else if (player.getPlayerClass() == PlayerClass.SUPPORT) {
+                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
                     tryPerformSupportHeal();
                 }
             } else {
@@ -432,6 +432,11 @@ public class GameplayScreen implements Screen {
             return;
         }
 
+        if (currentTarget == null) {
+            addCombatLog("Select an ally to heal.");
+            return;
+        }
+
         Entity healer = combatManager.getCurrentCombatant();
         if (healer == null) {
             addCombatLog("No healer available.");
@@ -439,16 +444,18 @@ public class GameplayScreen implements Screen {
         }
 
         String healerName = ((Player) healer).getName();
-        addCombatLog(healerName + " casts Heal!");
+        addCombatLog(healerName + " casts Recover!");
 
-        CombatResult result = combatManager.performAction(new HealAction(healer));
+        CombatResult result = combatManager.performAction(new RecoverAction(healer, currentTarget));
 
-        if (result == null) {
-            addCombatLog("Could not perform Heal.");
+        if (result == null || !result.didHit) {
+            addCombatLog("Could not perform Recover: " + (result != null ? result.message : "Unknown error"));
             return;
         }
 
-        addCombatLog(healerName + " healed for " + result.damageDealt + " HP.");
+        Player targetPlayer = (Player) result.defender;
+        String targetName = targetPlayer.getName();
+        addCombatLog(healerName + " healed " + targetName + " for " + result.damageDealt + " HP.");
 
         clearTargetSelection();
         combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
@@ -718,7 +725,7 @@ public class GameplayScreen implements Screen {
         String healerName = ((Player) healer).getName();
         addCombatLog(healerName + " casts Heal!");
 
-        CombatResult result = combatManager.performAction(new SupportHealAction(healer, currentTarget));
+        CombatResult result = combatManager.performAction(new HealAction(healer, currentTarget));
 
         if (result == null) {
             addCombatLog("Could not perform Heal.");

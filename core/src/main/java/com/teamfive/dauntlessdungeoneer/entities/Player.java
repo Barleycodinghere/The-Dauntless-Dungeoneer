@@ -12,10 +12,10 @@ public class Player extends Entity {
 
     private final Texture texture;
     private final TextureRegion sprite;
-    private final PlayerClass playerClass;
+    private final CharacterClass playerClass;
     private final String name;
 
-    public Player(PlayerClass playerClass) {
+    public Player(CharacterClass playerClass) {
         super();
         this.playerClass = playerClass;
         this.name = getDefaultName(playerClass);
@@ -32,26 +32,44 @@ public class Player extends Entity {
         addComponent(InventoryComponent.class, new InventoryComponent());
     }
 
-    private static String getDefaultName(PlayerClass playerClass) {
-        switch (playerClass) {
-            case TANK: return "Leeroy";
-            case DPS: return "Mr. Bigglesworth";
-            case SUPPORT: return "Mochi";
-            case GOBLIN: return "Goblin";
-            case DOG: return "Dog";
-            default: return "Unknown";
+    private static String getDefaultName(CharacterClass characterClass) {
+        if (characterClass instanceof PlayerClass) {
+            PlayerClass pc = (PlayerClass) characterClass;
+            switch (pc) {
+                case TANK: return "Leeroy";
+                case DPS: return "Mr. Bigglesworth";
+                case SUPPORT: return "Mochi";
+                default: return "Unknown";
+            }
+        } else if (characterClass instanceof MonsterClass) {
+            MonsterClass mc = (MonsterClass) characterClass;
+            switch (mc) {
+                case GOBLIN: return "Goblin";
+                case DOG: return "Dog";
+                default: return "Unknown";
+            }
         }
+        return "Unknown";
     }
 
-    private static String getTexturePath(PlayerClass playerClass) {
-        switch (playerClass) {
-            case TANK: return "EntityImages/Warrior.png";
-            case DPS: return "EntityImages/Wizard.png";
-            case SUPPORT: return "EntityImages/Healer.png";
-            case GOBLIN: return "EntityImages/Goblin.png";
-            case DOG: return "EntityImages/Dog.png";
-            default: return "EntityImages/Warrior.png"; // fallback
+    private static String getTexturePath(CharacterClass characterClass) {
+        if (characterClass instanceof PlayerClass) {
+            PlayerClass pc = (PlayerClass) characterClass;
+            switch (pc) {
+                case TANK: return "EntityImages/Warrior.png";
+                case DPS: return "EntityImages/Wizard.png";
+                case SUPPORT: return "EntityImages/Healer.png";
+                default: return "EntityImages/Warrior.png"; // fallback
+            }
+        } else if (characterClass instanceof MonsterClass) {
+            MonsterClass mc = (MonsterClass) characterClass;
+            switch (mc) {
+                case GOBLIN: return "EntityImages/Goblin.png";
+                case DOG: return "EntityImages/Dog.png";
+                default: return "EntityImages/Warrior.png"; // fallback
+            }
         }
+        return "EntityImages/Warrior.png"; // fallback
     }
 
     @Override
@@ -62,11 +80,15 @@ public class Player extends Entity {
         batch.setColor(originalColor);
     }
 
-    public PlayerClass getPlayerClass() {
+    public CharacterClass getPlayerClass() {
         return playerClass;
     }
 
     public String getName() {
         return name;
+    }
+
+    public TextureRegion getSprite() {
+        return sprite;
     }
 }

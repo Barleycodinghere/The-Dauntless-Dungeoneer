@@ -1,9 +1,7 @@
 package com.teamfive.dauntlessdungeoneer.components;
 
-public enum PlayerClass {
+public enum PlayerClass implements CharacterClass {
     DPS,
     TANK,
-    SUPPORT,
-    GOBLIN,
-    DOG
+    SUPPORT
 }

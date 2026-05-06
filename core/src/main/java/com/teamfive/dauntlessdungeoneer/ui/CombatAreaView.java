@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Stack;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
@@ -85,6 +86,9 @@ public class CombatAreaView {
         Table unitGroup = new Table();
         String unitID = "unit_" + player.getId();
 
+        Image image = new Image(player.getSprite());
+        image.setSize(80, 80);
+
         String labelText = isEnemy ? "ENEMY\n" + player.getName() : player.getName();
         final TextButton btn = new TextButton(labelText, skin);
 
@@ -108,6 +112,7 @@ public class CombatAreaView {
         manaStack.add(manaBar);
         manaStack.add(manaLabel);
 
+        unitGroup.add(image).size(80, 80).padBottom(10).row();
         unitGroup.add(btn).size(100, 100).row();
         unitGroup.add(hpStack).width(120).height(20).padTop(10).row();
         unitGroup.add(manaStack).width(120).height(20).padTop(5).row();

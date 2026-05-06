@@ -33,6 +33,10 @@ public class CombatManager {
     }
 
     public CombatResult performAction(CombatAction action) {
+        return performAction(action, true);
+    }
+
+    public CombatResult performAction(CombatAction action, boolean advanceTurn) {
         if (!combatActive) {
             return null;
         }
@@ -41,7 +45,7 @@ public class CombatManager {
 
         checkCombatEnd();
 
-        if (combatActive)
+        if (combatActive && advanceTurn)
             turnManager.advanceTurn();
 
         return result;

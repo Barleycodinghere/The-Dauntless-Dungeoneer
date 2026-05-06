@@ -14,6 +14,7 @@ public class CombatResult {
     public final int targetHpAfter;
 
     public final boolean targetDefeated;
+    public final String message;
 
     public CombatResult(Entity attacker,
                         Entity defender,
@@ -23,6 +24,18 @@ public class CombatResult {
                         int targetHpAfter,
                         boolean targetDefeated
     ) {
+        this(attacker, defender, didHit, damageDealt, targetHpBefore, targetHpAfter, targetDefeated, "");
+    }
+
+    public CombatResult(Entity attacker,
+                        Entity defender,
+                        boolean didHit,
+                        int damageDealt,
+                        int targetHpBefore,
+                        int targetHpAfter,
+                        boolean targetDefeated,
+                        String message
+    ) {
         this.attacker = attacker;
         this.defender = defender;
         this.didHit = didHit;
@@ -30,5 +43,6 @@ public class CombatResult {
         this.targetHpBefore = targetHpBefore;
         this.targetHpAfter = targetHpAfter;
         this.targetDefeated = targetDefeated;
+        this.message = message;
     }
 }

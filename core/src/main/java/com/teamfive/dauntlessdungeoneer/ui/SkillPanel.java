@@ -66,21 +66,21 @@ public class SkillPanel {
         basicAttackButton.setText("Basic Attack");
 
         // Set skill texts based on class
-        if (player.getPlayerClass() == PlayerClass.DPS) {
+        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
             skillButtons.get(1).setText("Fireball"); // index 1 is skill 2
             skillButtons.get(1).setDisabled(false);
             skillButtons.get(2).setText("Magic Missile");
             skillButtons.get(2).setDisabled(false);
             skillButtons.get(3).setText("Heal");
             skillButtons.get(3).setDisabled(false);
-        } else if (player.getPlayerClass() == PlayerClass.TANK) {
+        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
             skillButtons.get(1).setText("Heavy Attack");
             skillButtons.get(1).setDisabled(false);
             skillButtons.get(2).setText("Cleave");
             skillButtons.get(2).setDisabled(false);
             skillButtons.get(3).setText("Block");
             skillButtons.get(3).setDisabled(false);
-        } else if (player.getPlayerClass() == PlayerClass.SUPPORT) {
+        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
             skillButtons.get(1).setText("Smite!");
             skillButtons.get(1).setDisabled(false);
             skillButtons.get(2).setText("Mass Heal");
