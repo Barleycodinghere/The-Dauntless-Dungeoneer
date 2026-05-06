@@ -85,7 +85,7 @@ public class CombatAreaView {
         Table unitGroup = new Table();
         String unitID = "unit_" + player.getId();
 
-        String labelText = isEnemy ? "ENEMY\n" + player.getPlayerClass() : player.getPlayerClass().toString();
+        String labelText = isEnemy ? "ENEMY\n" + player.getName() : player.getName();
         final TextButton btn = new TextButton(labelText, skin);
 
         ProgressBar hpBar = new ProgressBar(0, 100, 1, false, hpStyle);

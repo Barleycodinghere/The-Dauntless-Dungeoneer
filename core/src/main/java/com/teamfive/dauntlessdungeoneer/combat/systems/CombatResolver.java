@@ -99,4 +99,127 @@ public class CombatResolver {
 
         return new CombatResult(healer, healer, true, healAmount, hpBefore, hpAfter, false);
     }
+
+    public CombatResult resolveHealTarget(Entity target, int healAmount) {
+        StatsComponent targetStats = target.getComponent(StatsComponent.class);
+        if (targetStats == null) {
+            return new CombatResult(target, target, false, 0, 0, 0, false);
+        }
+
+        int hpBefore = targetStats.getCurrentHP();
+        healthSystem.applyHealing(target, healAmount);
+        int hpAfter = targetStats.getCurrentHP();
+
+        return new CombatResult(target, target, true, healAmount, hpBefore, hpAfter, false);
+    }
+
+    public CombatResult resolveHeavyAttack(CombatAction action) {
+        Entity attacker = action.actor;
+        Entity target = action.target;
+
+        final int targetHpBefore = target.getComponent(StatsComponent.class).getCurrentHP();
+
+        // Validate target
+        if (!targetingSystem.isValidEnemyTarget(attacker, target)) {
+            return new CombatResult(
+                attacker,
+                target,
+                false,
+                0,
+                targetHpBefore,
+                targetHpBefore,
+                false
+            );
+        }
+
+        // Accuracy check
+        HitResult hitResult = accuracySystem.determineHit(attacker, target);
+
+        if (!hitResult.didHit) {
+            return new CombatResult(
+                attacker,
+                target,
+                false,
+                0,
+                targetHpBefore,
+                targetHpBefore,
+                false
+            );
+        }
+
+        // Damage calculation
+        DamageResult damageResult = damageSystem.calculateDamage(attacker, target);
+        int heavyDamage = damageResult.finalDamage * 2; // Double damage
+
+        // Apply damage
+        healthSystem.applyDamage(target, heavyDamage);
+        final int targetHpAfter = target.getComponent(StatsComponent.class).getCurrentHP();
+        final boolean targetDefeated = !target.getComponent(CombatantComponent.class).isAlive;
+
+        // Return result
+        return new CombatResult(
+            attacker,
+            target,
+            true,
+            heavyDamage,
+            targetHpBefore,
+            targetHpAfter,
+            targetDefeated
+            );
+    }
+
+    public CombatResult resolveSmite(CombatAction action) {
+        Entity attacker = action.actor;
+        Entity target = action.target;
+
+        final int targetHpBefore = target.getComponent(StatsComponent.class).getCurrentHP();
+
+        // Validate target
+        if (!targetingSystem.isValidEnemyTarget(attacker, target)) {
+            return new CombatResult(
+                attacker,
+                target,
+                false,
+                0,
+                targetHpBefore,
+                targetHpBefore,
+                false
+            );
+        }
+
+        // Accuracy check
+        HitResult hitResult = accuracySystem.determineHit(attacker, target);
+
+        if (!hitResult.didHit) {
+            return new CombatResult(
+                attacker,
+                target,
+                false,
+                0,
+                targetHpBefore,
+                targetHpBefore,
+                false
+            );
+        }
+
+        // Damage calculation
+        DamageResult damageResult = damageSystem.calculateDamage(attacker, target);
+        int smiteDamage = damageResult.finalDamage * 2; // Double damage
+
+        // Apply damage
+        healthSystem.applyDamage(target, smiteDamage);
+        final int targetHpAfter = target.getComponent(StatsComponent.class).getCurrentHP();
+        final boolean targetDefeated = !target.getComponent(CombatantComponent.class).isAlive;
+
+        // Return result
+        return new CombatResult(
+            attacker,
+            target,
+            true,
+            smiteDamage,
+            targetHpBefore,
+            targetHpAfter,
+            targetDefeated
+            );
+    }
 }

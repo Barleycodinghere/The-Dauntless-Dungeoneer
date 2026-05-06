@@ -65,8 +65,8 @@ public class MainMenuScreen implements Screen {
 
                 //Manually creates Enemy Team
                 Team enemyTeam = new Team();
-                enemyTeam.addMember(new Player(PlayerClass.DPS));
-                enemyTeam.addMember(new Player(PlayerClass.SUPPORT));
+                enemyTeam.addMember(new Player(PlayerClass.GOBLIN));
+                enemyTeam.addMember(new Player(PlayerClass.DOG));
 
                 game.setScreen(new GameplayScreen(game, playerTeam, enemyTeam)); // This switches screens!
             }

@@ -1,7 +1,6 @@
 package com.teamfive.dauntlessdungeoneer.entities;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -10,7 +9,7 @@ import com.teamfive.dauntlessdungeoneer.components.*;
 
 public class Player extends Entity {
 
-    private static Texture playerTexture;
+    private final Texture texture;
     private final TextureRegion sprite;
     private final PlayerClass playerClass;
     private final String name;
@@ -20,10 +19,9 @@ public class Player extends Entity {
         this.playerClass = playerClass;
         this.name = getDefaultName(playerClass);
 
-        if (playerTexture == null) {
-            playerTexture = createPlayerTexture();
-        }
-        this.sprite = new TextureRegion(playerTexture);
+        String texturePath = getTexturePath(playerClass);
+        this.texture = new Texture(Gdx.files.internal(texturePath));
+        this.sprite = new TextureRegion(texture);
 
         setSize(80, 80);
 
@@ -38,19 +36,21 @@ public class Player extends Entity {
             case TANK: return "Leeroy";
             case DPS: return "Mr. Bigglesworth";
             case SUPPORT: return "Mochi";
+            case GOBLIN: return "Goblin";
+            case DOG: return "Dog";
             default: return "Unknown";
         }
     }
 
-    private static Texture createPlayerTexture() {
-        Pixmap pixmap = new Pixmap(16, 16, Pixmap.Format.RGBA8888);
-        pixmap.setColor(Color.SKY);
-        pixmap.fillCircle(8, 8, 8);
-        pixmap.setColor(Color.GOLD);
-        pixmap.drawCircle(8, 8, 7);
-        Texture texture = new Texture(pixmap);
-        pixmap.dispose();
-        return texture;
+    private static String getTexturePath(PlayerClass playerClass) {
+        switch (playerClass) {
+            case TANK: return "EntityImages/Warrior.png";
+            case DPS: return "EntityImages/Wizard.png";
+            case SUPPORT: return "EntityImages/Healer.png";
+            case GOBLIN: return "EntityImages/Goblin.png";
+            case DOG: return "EntityImages/Dog.png";
+            default: return "EntityImages/Warrior.png"; // fallback
+        }
     }
 
     @Override

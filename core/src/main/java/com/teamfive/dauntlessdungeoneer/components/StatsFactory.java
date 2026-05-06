@@ -31,6 +31,24 @@ public class StatsFactory {
                 7,
                 6
             );
+
+            case GOBLIN -> new StatsComponent(
+                20,     // 1/4 of DPS HP
+                12,     // 1/4 of DPS Mana
+                15,     // 1/4 of DPS AC
+                5,      // 1/4 of DPS Speed
+                4,      // 1/4 of DPS ATK
+                1       // 1/4 of DPS DEF
+            );
+
+            case DOG -> new StatsComponent(
+                38,     // 1/4 of Tank HP
+                8,      // 1/4 of Tank Mana
+                4,      // 1/4 of Tank AC
+                1,      // 1/4 of Tank Speed
+                2,      // 1/4 of Tank ATK
+                3       // 1/4 of Tank DEF
+            );
         };
     }
 }
