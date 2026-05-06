@@ -64,6 +64,7 @@ public class GameplayScreen implements Screen {
     private ProgressBar.ProgressBarStyle hpStyle;
     private ProgressBar.ProgressBarStyle manaStyle;
     private Label currentTurnLabel;
+    private boolean uiInitialized = false;
 
     public GameplayScreen(GameMain game, Team playerTeam, Team enemyTeam) {
         this.game = game;
@@ -76,83 +77,87 @@ public class GameplayScreen implements Screen {
     public void show() {
         Gdx.input.setInputProcessor(stage);
 
-        root = new Table();
-        root.setFillParent(true);
-        stage.addActor(root);
+        if (!uiInitialized) {
+            root = new Table();
+            root.setFillParent(true);
+            stage.addActor(root);
 
-        initializeCombatSystems();
+            initializeCombatSystems();
 
-        // ADDED: Define how the HP bars look (Red fill, Gray background)
-        hpStyle = new ProgressBar.ProgressBarStyle();
-        hpStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
-        hpStyle.background.setMinHeight(20); 
-        hpStyle.knobBefore = game.skin.newDrawable("white", Color.RED); 
-        hpStyle.knobBefore.setMinHeight(20);
+            // ADDED: Define how the HP bars look (Red fill, Gray background)
+            hpStyle = new ProgressBar.ProgressBarStyle();
+            hpStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
+            hpStyle.background.setMinHeight(20); 
+            hpStyle.knobBefore = game.skin.newDrawable("white", Color.RED); 
+            hpStyle.knobBefore.setMinHeight(20);
 
-        // ADDED: Define how the Mana bars look (Blue fill, Gray background)
-        manaStyle = new ProgressBar.ProgressBarStyle();
-        manaStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
-        manaStyle.background.setMinHeight(20);
-        manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
-        manaStyle.knobBefore.setMinHeight(20);
+            // ADDED: Define how the Mana bars look (Blue fill, Gray background)
+            manaStyle = new ProgressBar.ProgressBarStyle();
+            manaStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
+            manaStyle.background.setMinHeight(20);
+            manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
+            manaStyle.knobBefore.setMinHeight(20);
 
-        combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
+            combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
+                currentTarget = selectedTarget;
+                addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
+            });
+            combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
+                currentTarget = selectedTarget;
+                addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
+            });
 
-        skillPanel = new SkillPanel(game.skin, skillIndex -> {
-            Entity currentActor = combatManager.getCurrentCombatant();
-            if (!(currentActor instanceof Player)) return;
+            skillPanel = new SkillPanel(game.skin, skillIndex -> {
+                Entity currentActor = combatManager.getCurrentCombatant();
+                if (!(currentActor instanceof Player)) return;
 
-            Player player = (Player) currentActor;
-            if (skillIndex == 1) {
-                tryPerformPlayerAttack();
-            } else if (skillIndex == 2) {
-                if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                    tryPerformFireball();
-                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                    tryPerformHeavyAttack();
-                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                    tryPerformSmite();
+                Player player = (Player) currentActor;
+                if (skillIndex == 1) {
+                    tryPerformPlayerAttack();
+                } else if (skillIndex == 2) {
+                    if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
+                        tryPerformFireball();
+                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
+                        tryPerformHeavyAttack();
+                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
+                        tryPerformSmite();
+                    }
+                } else if (skillIndex == 3) {
+                    if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
+                        tryPerformMagicMissile();
+                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
+                        tryPerformCleave();
+                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
+                        tryPerformMassHeal();
+                    }
+                } else if (skillIndex == 4) {
+                    if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
+                        tryPerformHeal();
+                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
+                        tryPerformBlock();
+                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
+                        tryPerformSupportHeal();
+                    }
+                } else {
+                    addCombatLog("Skill " + skillIndex + " is not ready yet.");
                 }
-            } else if (skillIndex == 3) {
-                if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                    tryPerformMagicMissile();
-                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                    tryPerformCleave();
-                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                    tryPerformMassHeal();
-                }
-            } else if (skillIndex == 4) {
-                if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                    tryPerformHeal();
-                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                    tryPerformBlock();
-                } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                    tryPerformSupportHeal();
-                }
-            } else {
-                addCombatLog("Skill " + skillIndex + " is not ready yet.");
-            }
-        });
+            });
 
-        combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
+            combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
 
-        currentTurnLabel = new Label("Current Turn: ", game.skin);
-        currentTurnLabel.setFontScale(1.5f); // Make it bigger
+            currentTurnLabel = new Label("Current Turn: ", game.skin);
+            currentTurnLabel.setFontScale(1.5f); // Make it bigger
 
-        Table uiArea = new Table();
-        uiArea.add(currentTurnLabel).colspan(2).center().padBottom(10).row();
-        uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
-        uiArea.add(combatLogBox.getActor()).right().top().pad(10);
+            Table uiArea = new Table();
+            uiArea.add(currentTurnLabel).colspan(2).center().padBottom(10).row();
+            uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
+            uiArea.add(combatLogBox.getActor()).right().top().pad(10);
 
-        root.add(combatAreaView.getRoot()).expand().center().row();
-        root.add(uiArea).height(220).fillX().padBottom(20);
+            root.add(combatAreaView.getRoot()).expand().center().row();
+            root.add(uiArea).height(220).fillX().padBottom(20);
+
+            uiInitialized = true;
+        }
     }
 
     private void updatePlayerUI(Player player) {

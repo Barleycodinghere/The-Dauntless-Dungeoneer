@@ -91,4 +91,9 @@ public class Player extends Entity {
     public TextureRegion getSprite() {
         return sprite;
     }
+
+    public boolean isAlive() {
+        StatsComponent stats = getComponent(StatsComponent.class);
+        return stats != null && stats.getCurrentHP() > 0;
+    }
 }

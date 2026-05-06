@@ -13,22 +13,32 @@ public class CleaveAction extends CombatAction {
 
     @Override
     public CombatResult resolve(CombatResolver resolver) {
-        // Perform 2 attacks on the same target
-        CombatResult result1 = resolver.resolveAttack(new com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction(actor, target));
-        CombatResult result2 = resolver.resolveAttack(new com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction(actor, target));
+        int cleaveCounter = 2;
+        int totalDamageDealt = 0;
+        boolean anyHit = false;
+        int targetHpBefore = 0;
+        int targetHpAfter = 0;
+        boolean targetDefeated = false;
 
-        // Combine results
-        boolean didHit = result1.didHit || result2.didHit;
-        int totalDamage = result1.damageDealt + result2.damageDealt;
-        int targetHpBefore = result1.targetHpBefore;
-        int targetHpAfter = result2.targetHpAfter;
-        boolean targetDefeated = result2.targetDefeated;
+        while (cleaveCounter > 0) {
+            CombatResult attackResult = resolver.resolveAttack(new com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction(actor, target));
+            if (cleaveCounter == 2) {
+                targetHpBefore = attackResult.targetHpBefore;
+            }
+            if (attackResult.didHit) {
+                totalDamageDealt += attackResult.damageDealt;
+                anyHit = true;
+            }
+            targetHpAfter = attackResult.targetHpAfter;
+            targetDefeated = attackResult.targetDefeated;
+            cleaveCounter--;
+        }
 
         return new CombatResult(
             actor,
             target,
-            didHit,
-            totalDamage,
+            anyHit,
+            totalDamageDealt,
             targetHpBefore,
             targetHpAfter,
             targetDefeated

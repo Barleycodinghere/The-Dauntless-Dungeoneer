@@ -14,9 +14,20 @@ public class MagicMissileAction extends CombatAction {
 
     @Override
     public CombatResult resolve(CombatResolver resolver) {
-        // Perform 1 attack
-        CombatResult result1 = resolver.resolveAttack(new AttackAction(actor, target));
+        int missileCounter = 3;
+        int totalDamageDealt = 0;
+        boolean anyHit = false;
 
-        return result1;
+        while (missileCounter > 0) {
+            CombatResult attackResult = resolver.resolveAttack(new AttackAction(actor, target));
+            if (attackResult.didHit) {
+                totalDamageDealt += attackResult.damageDealt;
+                anyHit = true;
+            }
+            missileCounter--;
+        }
+
+        // Return combined result
+        return new CombatResult(actor, target, anyHit, totalDamageDealt, 0, 0, false);
     }
 }
