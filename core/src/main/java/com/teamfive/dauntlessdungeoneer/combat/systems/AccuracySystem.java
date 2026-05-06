@@ -31,7 +31,8 @@ public class AccuracySystem {
         int max = 98;
         hitChance = clamp(hitChance, min, max);
 
-        int roll = random.nextInt((max - min) + 1) + min;
+
+        int roll = random.nextInt(100) + 1; 
         boolean didHit = roll <= hitChance;
 
         return new HitResult(didHit, hitChance);
