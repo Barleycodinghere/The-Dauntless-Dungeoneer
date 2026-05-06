@@ -7,6 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.teamfive.dauntlessdungeoneer.components.PlayerClass;
+import com.teamfive.dauntlessdungeoneer.entities.Player;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,5 +57,27 @@ public class SkillPanel {
 
     public void setBasicAttackEnabled(boolean enabled) {
         basicAttackButton.setDisabled(!enabled);
+    }
+
+    public void setPlayer(Player player) {
+        if (player == null) return;
+
+        // Set basic attack text to player's name
+        basicAttackButton.setText(player.getName() + "'s Attack");
+
+        // Set skill texts based on class
+        if (player.getPlayerClass() == PlayerClass.DPS) {
+            skillButtons.get(1).setText("Fireball"); // index 1 is skill 2
+            skillButtons.get(1).setDisabled(false);
+            skillButtons.get(2).setText("Magic Missile");
+            skillButtons.get(2).setDisabled(false);
+            skillButtons.get(3).setText("Heal");
+            skillButtons.get(3).setDisabled(false);
+        } else {
+            for (int i = 1; i < skillButtons.size(); i++) {
+                skillButtons.get(i).setText("Skill " + (i + 1));
+                skillButtons.get(i).setDisabled(true);
+            }
+        }
     }
 }

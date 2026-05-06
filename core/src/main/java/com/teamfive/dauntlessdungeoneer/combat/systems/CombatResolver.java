@@ -86,4 +86,17 @@ public class CombatResolver {
             targetDefeated
             );
     }
+
+    public CombatResult resolveHeal(Entity healer, int healAmount) {
+        StatsComponent healerStats = healer.getComponent(StatsComponent.class);
+        if (healerStats == null) {
+            return new CombatResult(healer, healer, false, 0, 0, 0, false);
+        }
+
+        int hpBefore = healerStats.getCurrentHP();
+        healthSystem.applyHealing(healer, healAmount);
+        int hpAfter = healerStats.getCurrentHP();
+
+        return new CombatResult(healer, healer, true, healAmount, hpBefore, hpAfter, false);
+    }
 }

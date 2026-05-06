@@ -13,10 +13,12 @@ public class Player extends Entity {
     private static Texture playerTexture;
     private final TextureRegion sprite;
     private final PlayerClass playerClass;
+    private final String name;
 
     public Player(PlayerClass playerClass) {
         super();
         this.playerClass = playerClass;
+        this.name = getDefaultName(playerClass);
 
         if (playerTexture == null) {
             playerTexture = createPlayerTexture();
@@ -29,6 +31,15 @@ public class Player extends Entity {
         addComponent(StatsComponent.class, StatsFactory.createStats(playerClass));
         // This ass ths inventory for a player
         addComponent(InventoryComponent.class, new InventoryComponent());
+    }
+
+    private static String getDefaultName(PlayerClass playerClass) {
+        switch (playerClass) {
+            case TANK: return "Leeroy";
+            case DPS: return "Mr. Bigglesworth";
+            case SUPPORT: return "Mochi";
+            default: return "Unknown";
+        }
     }
 
     private static Texture createPlayerTexture() {
@@ -52,5 +63,9 @@ public class Player extends Entity {
 
     public PlayerClass getPlayerClass() {
         return playerClass;
+    }
+
+    public String getName() {
+        return name;
     }
 }
