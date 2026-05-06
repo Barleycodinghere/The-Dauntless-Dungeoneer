@@ -1,5 +1,7 @@
 package com.teamfive.dauntlessdungeoneer.components;
+import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.ecs.Component;
+import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 import com.teamfive.dauntlessdungeoneer.items.Item;
 
 
@@ -48,6 +50,17 @@ public class InventoryComponent implements Component {
         }
         //If the item isn't found:
         System.out.println("Item not found.");
+    }
+
+    public void useItem(Item item, StatsComponent target) {
+        if (item.getItemId() == 8) { //if it is the health potion
+            target.heal(item.getStatBonus());
+        } else if (item.getItemId() == 9 || item.getItemId() == 10) { //if it is one of the damage potions
+            target.takeDamage(item.getStatBonus());
+        } else {
+            System.out.println("This item cannot be used!");
+        }
+        removeItem(item);
     }
     public void getInventory() {
             for (Item item : Inventory) {

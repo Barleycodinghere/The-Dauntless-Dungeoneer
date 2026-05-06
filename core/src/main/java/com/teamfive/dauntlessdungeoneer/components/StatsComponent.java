@@ -1,6 +1,6 @@
 package com.teamfive.dauntlessdungeoneer.components;
-
 import com.teamfive.dauntlessdungeoneer.ecs.Component;
+import com.teamfive.dauntlessdungeoneer.items.Item;
 
 public class StatsComponent implements Component {
 
@@ -14,6 +14,9 @@ public class StatsComponent implements Component {
     private int attack;
     private int defense;
 
+    private int bonusAttack;
+    private int bonusDefense;
+
     public StatsComponent(int hp, int mana, int ac, int speed, int attack, int defense) {
         this.maxHP = hp;
         this.currentHP = hp;
@@ -23,6 +26,8 @@ public class StatsComponent implements Component {
         this.speed = speed;
         this.attack = attack;
         this.defense = defense;
+        this.bonusAttack = 0;
+        this.bonusDefense = 0;
     }
 
     // --- getters ---
@@ -34,8 +39,8 @@ public class StatsComponent implements Component {
 
     public int getAC() { return AC; }
     public int getSpeed() { return speed; }
-    public int getAttack() { return attack; }
-    public int getDefense() { return defense; }
+    public int getAttack() { return attack + bonusAttack;}
+    public int getDefense() { return defense + bonusDefense; }
 
     // --- basic stat changes ---
     public void takeDamage(int amount) {
@@ -55,5 +60,27 @@ public class StatsComponent implements Component {
 
     public boolean isAlive() {
         return currentHP > 0;
+    }
+
+    // --- bonus stat changes ---
+    public void equip(Item equip) {
+        Item[] Hands = new Item[2];
+        //hand 0 is the weapon, and hand 1 is the armor
+        //equip.getStatBonus();
+        switch (equip.getType()) {
+            case 1:
+                Hands[0] = equip;
+                System.out.println("Weapon Equipped");
+                bonusAttack = equip.getStatBonus();
+                break;
+            case 2:
+                Hands[1] = equip;
+                System.out.println("Defense Equipped");
+                bonusDefense = equip.getStatBonus();
+                break;
+            default:
+                System.out.println("This is a consumable, it cannot be equipped.");
+        }
+
     }
 }
