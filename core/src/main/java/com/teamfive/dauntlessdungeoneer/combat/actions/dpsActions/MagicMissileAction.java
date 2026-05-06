@@ -1,8 +1,10 @@
-package com.teamfive.dauntlessdungeoneer.combat.actions;
+package com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions;
 
 import com.teamfive.dauntlessdungeoneer.combat.results.CombatResult;
 import com.teamfive.dauntlessdungeoneer.combat.systems.CombatResolver;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
+import com.teamfive.dauntlessdungeoneer.combat.actions.CombatAction;
+import com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction;
 
 public class MagicMissileAction extends CombatAction {
 

@@ -63,6 +63,7 @@ public class GameplayScreen implements Screen {
 
     private ProgressBar.ProgressBarStyle hpStyle;
     private ProgressBar.ProgressBarStyle manaStyle;
+    private Label currentTurnLabel;
 
     public GameplayScreen(GameMain game, Team playerTeam, Team enemyTeam) {
         this.game = game;
