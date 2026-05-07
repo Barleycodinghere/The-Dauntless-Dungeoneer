@@ -16,18 +16,13 @@ import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class MonsterAISystem {
-
-    private final CombatManager combatManager;
     private final Team playerTeam;
     private final Consumer<String> logger;
-    private final Consumer<Player> deathHandler;
     private final GameplayScreen screen;
 
-    public MonsterAISystem(CombatManager combatManager, Team playerTeam, Consumer<String> logger, Consumer<Player> deathHandler, GameplayScreen screen) {
-        this.combatManager = combatManager;
+    public MonsterAISystem(Team playerTeam, Consumer<String> logger, GameplayScreen screen) {
         this.playerTeam = playerTeam;
         this.logger = logger;
-        this.deathHandler = deathHandler;
         this.screen = screen;
     }
 

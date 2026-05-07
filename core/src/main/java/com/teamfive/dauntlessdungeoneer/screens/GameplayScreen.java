@@ -254,11 +254,9 @@ public class GameplayScreen implements Screen {
         combatManager = new CombatManager(new TurnManager(), combatResolver);
         visualizer = new CombatVisualizer(stage);
 
-        monsterAI = new MonsterAISystem(
-                            combatManager, 
+        monsterAI = new MonsterAISystem( 
                             playerTeam, 
-                            this::addCombatLog,
-                            this::handleCharacterDeath, 
+                            this::addCombatLog, 
                             this
         );
 
