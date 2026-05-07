@@ -1,4 +1,4 @@
-package com.teamfive.dauntlessdungeoneer;
+package com.teamfive.dauntlessdungeoneer.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -31,9 +31,15 @@ import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 import com.teamfive.dauntlessdungeoneer.ui.CombatAreaView;
 import com.teamfive.dauntlessdungeoneer.ui.CombatLogBox;
 import com.teamfive.dauntlessdungeoneer.ui.SkillPanel;
+import com.teamfive.dauntlessdungeoneer.ui.CombatVisualizer;
 import com.teamfive.dauntlessdungeoneer.combat.abilities.Ability;
 import com.teamfive.dauntlessdungeoneer.combat.abilities.AbilityLoadout;
 import com.teamfive.dauntlessdungeoneer.combat.systems.MonsterAISystem;
+import com.teamfive.dauntlessdungeoneer.screens.DefeatScreen;
+import com.teamfive.dauntlessdungeoneer.screens.VictoryScreen;
+import com.teamfive.dauntlessdungeoneer.screens.MainMenuScreen;
+import com.teamfive.dauntlessdungeoneer.GameMain;
+
 
 
 
@@ -43,6 +49,7 @@ public class GameplayScreen implements Screen {
     private final Stage stage;
     private CombatAreaView combatAreaView;
     private Table root;
+    private CombatVisualizer visualizer;
 
     private final Team playerTeam;
     private final Team enemyTeam;
@@ -52,6 +59,7 @@ public class GameplayScreen implements Screen {
     private CombatManager combatManager;
     private CombatLogBox combatLogBox;
     private SkillPanel skillPanel;
+    
 
     private ProgressBar.ProgressBarStyle hpStyle;
     private ProgressBar.ProgressBarStyle manaStyle;
@@ -105,37 +113,24 @@ public class GameplayScreen implements Screen {
                 if (!(currentActor instanceof Player)) return;
                 Player player = (Player) currentActor;
 
-                StatsComponent stats = player.getComponent(StatsComponent.class);
-                if (stats == null) return;
-
                 if (currentTarget == null) {
                     addCombatLog("Select a target first.");
                     return;
                 }
 
                 int index = skillIndex - 1;
-
                 Ability ability = player.getAbilityLoadout().get(index);
-                System.out.println("Clicked index: " + skillIndex + " | Ability: " + ability.getName() + " | Cost: " + ability.getManaCost());
 
-                if (ability == null) {
-                    addCombatLog("No ability in slot " + skillIndex);
-                    return;
-                }
-                if (stats.getCurrentMana() < ability.getManaCost()) {
-                    addCombatLog("Not enough mana for " + ability.getName());
-                    return;
-                }
-
-                CombatResult result = ability.execute(currentActor, currentTarget, combatManager);
-
-                // DEDUCT MANA
-                stats.useMana(ability.getManaCost());
-
-                addCombatLog(player.getName() + " used " + ability.getName());
-
-                if (result != null && result.targetDefeated) {
-                    handleCharacterDeath((Player) currentTarget);
+                if (ability != null && currentTarget instanceof Player target) {
+                    
+                    // THIS ONE LINE replaces the execution, mana deduction, 
+                    // logging, and death checks because useAbility handles them all!
+                    useAbility(ability, player, target);
+                    
+                } else if (currentTarget == null) {
+                    addCombatLog("Select a target first.");
+                } else {
+                    addCombatLog("Invalid ability or target.");
                 }
             });
 
@@ -153,6 +148,24 @@ public class GameplayScreen implements Screen {
             root.add(uiArea).height(220).fillX().padBottom(20);
 
             uiInitialized = true;
+        }
+    }
+
+    public void useAbility(Ability ability, Player actor, Player target) {
+        StatsComponent stats = actor.getComponent(StatsComponent.class);
+        if (stats.getCurrentMana() < ability.getManaCost()) {
+            addCombatLog("Not enough mana!");
+            return;
+        }
+
+        if (ability.getName().equalsIgnoreCase("Fireball")) {
+            // PLAY PROJECTILE ANIMATION
+            visualizer.playFireballEffect(actor, target, () -> {
+                executeAbilityLogic(ability, actor, target);
+            });
+        } else {
+            // INSTANT ATTACK
+            executeAbilityLogic(ability, actor, target);
         }
     }
 
@@ -239,12 +252,14 @@ public class GameplayScreen implements Screen {
         );
 
         combatManager = new CombatManager(new TurnManager(), combatResolver);
+        visualizer = new CombatVisualizer(stage);
 
         monsterAI = new MonsterAISystem(
                             combatManager, 
                             playerTeam, 
                             this::addCombatLog,
-                            this::handleCharacterDeath 
+                            this::handleCharacterDeath, 
+                            this
         );
 
 
@@ -290,6 +305,25 @@ public class GameplayScreen implements Screen {
         }
     }
 
+    private void executeAbilityLogic(Ability ability, Player actor, Player target) {
+    // 1. Run the actual math
+    CombatResult result = ability.execute(actor, target, combatManager);
+    
+    // 2. Deduct the mana
+    StatsComponent stats = actor.getComponent(StatsComponent.class);
+    if (stats != null) stats.useMana(ability.getManaCost());
+
+    // 3. Log the result
+    if (result != null && result.didHit) {
+        addCombatLog(actor.getName() + " hit " + target.getName() + " for " + result.damageDealt + "!");
+        if (result.targetDefeated) {
+            handleCharacterDeath(target);
+        }
+    } else {
+        addCombatLog(actor.getName() + " missed!");
+        }
+    }
+
     private void handleCharacterDeath(Player defeatedCharacter) {
         if (defeatedCharacter == null || combatAreaView == null) {
             return;
@@ -312,11 +346,11 @@ public class GameplayScreen implements Screen {
 
         if (enemyTeam.getMembers().isEmpty()) {
             addCombatLog("VICTORY! All enemies defeated.");
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(new VictoryScreen(game)); 
         }
         else if (playerTeam.getMembers().isEmpty()) {
             addCombatLog("GAME OVER: Your party was wiped out!");
-            game.setScreen(new MainMenuScreen(game));
+            game.setScreen(new DefeatScreen(game));
         }
     }
 
@@ -328,7 +362,10 @@ public class GameplayScreen implements Screen {
 
     @Override public void resize(int width, int height) { stage.getViewport().update(width, height, true); }
     @Override public void hide() { Gdx.input.setInputProcessor(null); }
-    @Override public void dispose() { stage.dispose(); }
+    @Override public void dispose() { 
+        stage.dispose(); 
+        if (visualizer != null) visualizer.dispose();
+    }
     @Override public void pause() {}
     @Override public void resume() {}
 }

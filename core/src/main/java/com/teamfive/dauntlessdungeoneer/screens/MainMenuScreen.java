@@ -1,4 +1,4 @@
-package com.teamfive.dauntlessdungeoneer;
+package com.teamfive.dauntlessdungeoneer.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -11,11 +11,13 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.graphics.Color;
 import com.teamfive.dauntlessdungeoneer.screens.SettingsScreen;
+import com.teamfive.dauntlessdungeoneer.screens.GameplayScreen;
 import com.teamfive.dauntlessdungeoneer.entities.Team;
 import com.teamfive.dauntlessdungeoneer.entities.Player;
 import com.teamfive.dauntlessdungeoneer.components.PlayerClass;
 import com.teamfive.dauntlessdungeoneer.components.MonsterClass;
 import com.teamfive.dauntlessdungeoneer.screens.TeamSelectScreen;
+import com.teamfive.dauntlessdungeoneer.GameMain;
 
 public class MainMenuScreen implements Screen {
     private final GameMain game;

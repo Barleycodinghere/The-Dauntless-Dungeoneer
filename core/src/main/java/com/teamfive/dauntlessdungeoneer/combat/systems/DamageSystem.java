@@ -14,11 +14,10 @@ public class DamageSystem {
             return new DamageResult(0,0,0);
         }
 
-        int baseDamage = Math.max(1, Math.round(attackerStats.getMaxHP() * 0.1f));
+        int baseDamage = attackerStats.getAttack(); 
         int defenseReduction = Math.max(0, targetStats.getDefense() / 2);
 
-        int finalDamage = baseDamage - defenseReduction;
-        finalDamage = Math.max(finalDamage, 1);
+        int finalDamage = Math.max(1, baseDamage - defenseReduction);
 
         return new DamageResult(baseDamage, defenseReduction, finalDamage);
     }

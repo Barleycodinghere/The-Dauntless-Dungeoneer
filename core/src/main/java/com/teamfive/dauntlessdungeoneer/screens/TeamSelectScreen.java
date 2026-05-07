@@ -11,7 +11,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import com.teamfive.dauntlessdungeoneer.GameMain;
-import com.teamfive.dauntlessdungeoneer.GameplayScreen;
+import com.teamfive.dauntlessdungeoneer.screens.GameplayScreen; 
 import com.teamfive.dauntlessdungeoneer.entities.Team;
 import com.teamfive.dauntlessdungeoneer.entities.Player;
 import com.teamfive.dauntlessdungeoneer.components.PlayerClass;

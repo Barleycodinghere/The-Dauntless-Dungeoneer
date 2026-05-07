@@ -10,6 +10,7 @@ import com.teamfive.dauntlessdungeoneer.components.StatsComponent;
 import com.teamfive.dauntlessdungeoneer.entities.Player;
 import com.teamfive.dauntlessdungeoneer.entities.Team;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
+import com.teamfive.dauntlessdungeoneer.screens.GameplayScreen;
 
 import java.util.ArrayList;
 import java.util.function.Consumer;
@@ -20,12 +21,14 @@ public class MonsterAISystem {
     private final Team playerTeam;
     private final Consumer<String> logger;
     private final Consumer<Player> deathHandler;
+    private final GameplayScreen screen;
 
-    public MonsterAISystem(CombatManager combatManager, Team playerTeam, Consumer<String> logger, Consumer<Player> deathHandler) {
+    public MonsterAISystem(CombatManager combatManager, Team playerTeam, Consumer<String> logger, Consumer<Player> deathHandler, GameplayScreen screen) {
         this.combatManager = combatManager;
         this.playerTeam = playerTeam;
         this.logger = logger;
         this.deathHandler = deathHandler;
+        this.screen = screen;
     }
 
     public void executeTurn(Entity enemy) {
@@ -68,21 +71,6 @@ public class MonsterAISystem {
                                 usableAbilities.get(MathUtils.random(usableAbilities.size() - 1));
 
         // 3. Execute
-        logger.accept(monster.getName() + " uses " + chosenAbility.getName() + " on " + target.getName() + "!");
-        CombatResult result = chosenAbility.execute(monster, target, combatManager);
-
-        // Deduct Mana
-        stats.useMana(chosenAbility.getManaCost());
-
-        // 4. Process the Result
-        if (result != null && result.didHit) {
-            logger.accept("The attack hit for " + result.damageDealt + " damage.");
-            if (result.targetDefeated) {
-                logger.accept(target.getName() + " has been defeated!");
-                deathHandler.accept(target);
-            }
-        } else {
-            logger.accept("The attack missed!");
-        }
+        screen.useAbility(chosenAbility, monster, target);
     }
 }

@@ -3,6 +3,8 @@ package com.teamfive.dauntlessdungeoneer;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.teamfive.dauntlessdungeoneer.screens.MainMenuScreen;
+import com.teamfive.dauntlessdungeoneer.screens.GameplayScreen;
 
 public class GameMain extends Game {
     // We keep the skin here so all screens can use it without reloading it
