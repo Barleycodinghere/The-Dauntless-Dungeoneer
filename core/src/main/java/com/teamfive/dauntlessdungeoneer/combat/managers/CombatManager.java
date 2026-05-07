@@ -5,6 +5,10 @@ import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.results.CombatResult;
 import com.teamfive.dauntlessdungeoneer.combat.systems.CombatResolver;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
+import com.teamfive.dauntlessdungeoneer.items.LootGenerator;
+import com.teamfive.dauntlessdungeoneer.items.Item;
+import com.teamfive.dauntlessdungeoneer.components.InventoryComponent;
+
 
 import java.util.List;
 
@@ -64,6 +68,36 @@ public class CombatManager {
         }
 
         if (!playerAlive || !enemyAlive) {
+
+            // if/when the player wins
+            if (playerAlive && !enemyAlive) {
+
+                //find the player entity
+                for (Entity e : combatants) {
+
+                    CombatantComponent combatant =
+                        e.getComponent(CombatantComponent.class);
+
+                    if (combatant != null &&
+                        combatant.team == CombatantComponent.Team.PLAYER) {
+
+                        //get their inventory
+                        InventoryComponent inventory =
+                            e.getComponent(InventoryComponent.class);
+
+                        // roll for loot
+                        if (LootGenerator.rollDropChance(90)) {
+
+                            Item loot = LootGenerator.generateRandomItem();
+
+                            inventory.addItem(loot);
+
+                            System.out.println("Loot found: " + loot);
+                        }
+                    }
+                }
+            }
+
             combatActive = false;
         }
     }
