@@ -33,6 +33,10 @@ import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.BlockAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.SmiteAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.MassHealAction;
 import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.HealAction;
+import com.teamfive.dauntlessdungeoneer.combat.actions.BasicActionHandler;
+import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.DpsActionHandler;
+import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.TankActionHandler;
+import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.SupportActionHandler;
 import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.managers.CombatManager;
 import com.teamfive.dauntlessdungeoneer.combat.managers.TurnManager;
@@ -65,6 +69,12 @@ public class GameplayScreen implements Screen {
     private ProgressBar.ProgressBarStyle manaStyle;
     private Label currentTurnLabel;
     private boolean uiInitialized = false;
+    private boolean hasBeenShownBefore = false;
+
+    private BasicActionHandler basicActionHandler;
+    private DpsActionHandler dpsActionHandler;
+    private TankActionHandler tankActionHandler;
+    private SupportActionHandler supportActionHandler;
 
     public GameplayScreen(GameMain game, Team playerTeam, Team enemyTeam) {
         this.game = game;
@@ -77,86 +87,106 @@ public class GameplayScreen implements Screen {
     public void show() {
         Gdx.input.setInputProcessor(stage);
 
-        if (!uiInitialized) {
-            root = new Table();
-            root.setFillParent(true);
-            stage.addActor(root);
+        if (!hasBeenShownBefore) {
+            if (!uiInitialized) {
+                root = new Table();
+                root.setFillParent(true);
+                stage.addActor(root);
 
-            initializeCombatSystems();
+                initializeCombatSystems();
 
-            // ADDED: Define how the HP bars look (Red fill, Gray background)
-            hpStyle = new ProgressBar.ProgressBarStyle();
-            hpStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
-            hpStyle.background.setMinHeight(20); 
-            hpStyle.knobBefore = game.skin.newDrawable("white", Color.RED); 
-            hpStyle.knobBefore.setMinHeight(20);
+                // ADDED: Define how the HP bars look (Red fill, Gray background)
+                hpStyle = new ProgressBar.ProgressBarStyle();
+                hpStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
+                hpStyle.background.setMinHeight(20); 
+                hpStyle.knobBefore = game.skin.newDrawable("white", Color.RED); 
+                hpStyle.knobBefore.setMinHeight(20);
 
-            // ADDED: Define how the Mana bars look (Blue fill, Gray background)
-            manaStyle = new ProgressBar.ProgressBarStyle();
-            manaStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
-            manaStyle.background.setMinHeight(20);
-            manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
-            manaStyle.knobBefore.setMinHeight(20);
+                // ADDED: Define how the Mana bars look (Blue fill, Gray background)
+                manaStyle = new ProgressBar.ProgressBarStyle();
+                manaStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
+                manaStyle.background.setMinHeight(20);
+                manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
+                manaStyle.knobBefore.setMinHeight(20);
 
-            combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
-                currentTarget = selectedTarget;
-                addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-            });
-            combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-                currentTarget = selectedTarget;
-                addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-            });
+                combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
+                    currentTarget = selectedTarget;
+                    addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
+                });
+                combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
+                    currentTarget = selectedTarget;
+                    addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
+                });
 
-            skillPanel = new SkillPanel(game.skin, skillIndex -> {
-                Entity currentActor = combatManager.getCurrentCombatant();
-                if (!(currentActor instanceof Player)) return;
+                skillPanel = new SkillPanel(game.skin, skillIndex -> {
+                    Entity currentActor = combatManager.getCurrentCombatant();
+                    if (!(currentActor instanceof Player)) return;
 
-                Player player = (Player) currentActor;
-                if (skillIndex == 1) {
-                    tryPerformPlayerAttack();
-                } else if (skillIndex == 2) {
-                    if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                        tryPerformFireball();
-                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                        tryPerformHeavyAttack();
-                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                        tryPerformSmite();
+                    Player player = (Player) currentActor;
+                    
+                    // Update handlers with current target
+                    if (basicActionHandler != null) basicActionHandler.setCurrentTarget(currentTarget);
+                    if (dpsActionHandler != null) dpsActionHandler.setCurrentTarget(currentTarget);
+                    if (tankActionHandler != null) tankActionHandler.setCurrentTarget(currentTarget);
+                    if (supportActionHandler != null) supportActionHandler.setCurrentTarget(currentTarget);
+                    
+                    if (skillIndex == 1) {
+                        if (basicActionHandler != null) basicActionHandler.performBasicAttack();
+                    } else if (skillIndex == 2) {
+                        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
+                            if (dpsActionHandler != null) dpsActionHandler.performFireball();
+                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
+                            if (tankActionHandler != null) tankActionHandler.performHeavyAttack();
+                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
+                            if (supportActionHandler != null) supportActionHandler.performSmite();
+                        }
+                    } else if (skillIndex == 3) {
+                        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
+                            if (dpsActionHandler != null) dpsActionHandler.performMagicMissile();
+                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
+                            if (tankActionHandler != null) tankActionHandler.performCleave();
+                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
+                            if (supportActionHandler != null) supportActionHandler.performMassHeal();
+                        }
+                    } else if (skillIndex == 4) {
+                        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
+                            if (dpsActionHandler != null) dpsActionHandler.performRecover();
+                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
+                            if (tankActionHandler != null) tankActionHandler.performBlock();
+                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
+                            if (supportActionHandler != null) supportActionHandler.performHeal();
+                        }
+                    } else {
+                        addCombatLog("Skill " + skillIndex + " is not ready yet.");
                     }
-                } else if (skillIndex == 3) {
-                    if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                        tryPerformMagicMissile();
-                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                        tryPerformCleave();
-                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                        tryPerformMassHeal();
-                    }
-                } else if (skillIndex == 4) {
-                    if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                        tryPerformHeal();
-                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                        tryPerformBlock();
-                    } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                        tryPerformSupportHeal();
-                    }
-                } else {
-                    addCombatLog("Skill " + skillIndex + " is not ready yet.");
-                }
-            });
+                });
 
-            combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
+                combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
 
-            currentTurnLabel = new Label("Current Turn: ", game.skin);
-            currentTurnLabel.setFontScale(1.5f); // Make it bigger
+                currentTurnLabel = new Label("Current Turn: ", game.skin);
+                currentTurnLabel.setFontScale(1.5f); // Make it bigger
 
-            Table uiArea = new Table();
-            uiArea.add(currentTurnLabel).colspan(2).center().padBottom(10).row();
-            uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
-            uiArea.add(combatLogBox.getActor()).right().top().pad(10);
+                Table uiArea = new Table();
+                uiArea.add(currentTurnLabel).colspan(2).center().padBottom(10).row();
+                uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
+                uiArea.add(combatLogBox.getActor()).right().top().pad(10);
 
-            root.add(combatAreaView.getRoot()).expand().center().row();
-            root.add(uiArea).height(220).fillX().padBottom(20);
+                root.add(combatAreaView.getRoot()).expand().center().row();
+                root.add(uiArea).height(220).fillX().padBottom(20);
 
-            uiInitialized = true;
+                uiInitialized = true;
+
+                // Initialize action handlers
+                basicActionHandler = new BasicActionHandler(combatManager, combatAreaView, combatLogBox, 
+                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
+                dpsActionHandler = new DpsActionHandler(combatManager, combatAreaView, combatLogBox,
+                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
+                tankActionHandler = new TankActionHandler(combatManager, combatAreaView, combatLogBox,
+                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
+                supportActionHandler = new SupportActionHandler(combatManager, combatAreaView, combatLogBox,
+                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
+            }
+            hasBeenShownBefore = true;
         }
     }
 
@@ -272,483 +302,6 @@ public class GameplayScreen implements Screen {
         return combatant != null && combatant.team == CombatantComponent.Team.PLAYER;
     }
 
-    private void tryPerformPlayerAttack() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before attacking.");
-            return;
-        }
-
-        Entity attacker = combatManager.getCurrentCombatant();
-        if (attacker == null) {
-            addCombatLog("No attacker available.");
-            return;
-        }
-
-        CombatResult result = combatManager.performAction(new AttackAction(attacker, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform attack.");
-            return;
-        }
-
-        Player defenderPlayer = (Player) result.defender;
-        String attackerName = ((Player) attacker).getName();
-        String defenderName = defenderPlayer.getName();
-
-        if (!result.didHit) {
-            addCombatLog("Player " + attackerName + " attacked " + defenderName + " but missed.");
-        } else {
-            addCombatLog("Player " + attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog("Player " + attackerName + " defeated " + defenderName + "!");
-        }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformFireball() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity attacker = combatManager.getCurrentCombatant();
-        if (attacker == null) {
-            addCombatLog("No attacker available.");
-            return;
-        }
-
-        String attackerName = ((Player) attacker).getName();
-        addCombatLog(attackerName + " casts Fireball!");
-
-        CombatResult result = combatManager.performAction(new FireballAction(attacker, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Fireball.");
-            return;
-        }
-
-        Player defenderPlayer = (Player) result.defender;
-        String defenderName = defenderPlayer.getName();
-
-        if (!result.didHit) {
-            addCombatLog(attackerName + " cast Fireball at " + defenderName + " but missed.");
-        } else {
-            addCombatLog(attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage with Fireball.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog(attackerName + " defeated " + defenderName + " with Fireball!");
-        }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformMagicMissile() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity attacker = combatManager.getCurrentCombatant();
-        if (attacker == null) {
-            addCombatLog("No attacker available.");
-            return;
-        }
-
-        String attackerName = ((Player) attacker).getName();
-        addCombatLog(attackerName + " casts Magic Missile!");
-
-        CombatResult result = combatManager.performAction(new MagicMissileAction(attacker, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Magic Missile.");
-            return;
-        }
-
-        Player defenderPlayer = (Player) result.defender;
-        String defenderName = defenderPlayer.getName();
-
-        if (!result.didHit) {
-            addCombatLog(attackerName + " cast Magic Missile at " + defenderName + " but missed.");
-        } else {
-            addCombatLog(attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage with Magic Missile.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog(attackerName + " defeated " + defenderName + " with Magic Missile!");
-        }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformHeal() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select an ally to heal.");
-            return;
-        }
-
-        Entity healer = combatManager.getCurrentCombatant();
-        if (healer == null) {
-            addCombatLog("No healer available.");
-            return;
-        }
-
-        String healerName = ((Player) healer).getName();
-        addCombatLog(healerName + " casts Recover!");
-
-        CombatResult result = combatManager.performAction(new RecoverAction(healer, currentTarget));
-
-        if (result == null || !result.didHit) {
-            addCombatLog("Could not perform Recover: " + (result != null ? result.message : "Unknown error"));
-            return;
-        }
-
-        Player targetPlayer = (Player) result.defender;
-        String targetName = targetPlayer.getName();
-        addCombatLog(healerName + " healed " + targetName + " for " + result.damageDealt + " HP.");
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformHeavyAttack() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity attacker = combatManager.getCurrentCombatant();
-        if (attacker == null) {
-            addCombatLog("No attacker available.");
-            return;
-        }
-
-        String attackerName = ((Player) attacker).getName();
-        addCombatLog(attackerName + " casts Heavy Attack!");
-
-        CombatResult result = combatManager.performAction(new HeavyAttackAction(attacker, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Heavy Attack.");
-            return;
-        }
-
-        Player defenderPlayer = (Player) result.defender;
-        String defenderName = defenderPlayer.getName();
-
-        if (!result.didHit) {
-            addCombatLog(attackerName + " cast Heavy Attack at " + defenderName + " but missed.");
-        } else {
-            addCombatLog(attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage with Heavy Attack.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog(attackerName + " defeated " + defenderName + " with Heavy Attack!");
-        }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformCleave() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity attacker = combatManager.getCurrentCombatant();
-        if (attacker == null) {
-            addCombatLog("No attacker available.");
-            return;
-        }
-
-        String attackerName = ((Player) attacker).getName();
-        addCombatLog(attackerName + " casts Cleave!");
-
-        CombatResult result = combatManager.performAction(new CleaveAction(attacker, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Cleave.");
-            return;
-        }
-
-        Player defenderPlayer = (Player) result.defender;
-        String defenderName = defenderPlayer.getName();
-
-        if (!result.didHit) {
-            addCombatLog(attackerName + " cast Cleave at " + defenderName + " but missed.");
-        } else {
-            addCombatLog(attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage with Cleave.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog(attackerName + " defeated " + defenderName + " with Cleave!");
-        }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformBlock() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        Entity blocker = combatManager.getCurrentCombatant();
-        if (blocker == null) {
-            addCombatLog("No blocker available.");
-            return;
-        }
-
-        String blockerName = ((Player) blocker).getName();
-        addCombatLog(blockerName + " casts Block!");
-
-        CombatResult result = combatManager.performAction(new BlockAction(blocker));
-
-        if (result == null) {
-            addCombatLog("Could not perform Block.");
-            return;
-        }
-
-        addCombatLog(blockerName + " healed for " + result.damageDealt + " HP with Block.");
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformSmite() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity attacker = combatManager.getCurrentCombatant();
-        if (attacker == null) {
-            addCombatLog("No attacker available.");
-            return;
-        }
-
-        String attackerName = ((Player) attacker).getName();
-        addCombatLog(attackerName + " casts Smite!");
-
-        CombatResult result = combatManager.performAction(new SmiteAction(attacker, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Smite.");
-            return;
-        }
-
-        Player defenderPlayer = (Player) result.defender;
-        String defenderName = defenderPlayer.getName();
-
-        if (!result.didHit) {
-            addCombatLog(attackerName + " cast Smite at " + defenderName + " but missed.");
-        } else {
-            addCombatLog(attackerName + " hit " + defenderName + " for " + result.damageDealt + " damage with Smite.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog(attackerName + " defeated " + defenderName + " with Smite!");
-        }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformMassHeal() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity healer = combatManager.getCurrentCombatant();
-        if (healer == null) {
-            addCombatLog("No healer available.");
-            return;
-        }
-
-        String healerName = ((Player) healer).getName();
-        addCombatLog(healerName + " casts Mass Heal!");
-
-        CombatResult result = combatManager.performAction(new MassHealAction(healer, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Mass Heal.");
-            return;
-        }
-
-        Player targetPlayer = (Player) result.defender;
-        String targetName = targetPlayer.getName();
-
-        addCombatLog(healerName + " healed " + targetName + " for " + result.damageDealt + " HP with Mass Heal.");
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
-    private void tryPerformSupportHeal() {
-        if (!combatManager.isCombatActive()) {
-            addCombatLog("Combat has ended.");
-            return;
-        }
-
-        if (!isPlayerTurn()) {
-            addCombatLog("It is not your turn yet.");
-            return;
-        }
-
-        if (currentTarget == null) {
-            addCombatLog("Select a target before casting.");
-            return;
-        }
-
-        Entity healer = combatManager.getCurrentCombatant();
-        if (healer == null) {
-            addCombatLog("No healer available.");
-            return;
-        }
-
-        String healerName = ((Player) healer).getName();
-        addCombatLog(healerName + " casts Heal!");
-
-        CombatResult result = combatManager.performAction(new HealAction(healer, currentTarget));
-
-        if (result == null) {
-            addCombatLog("Could not perform Heal.");
-            return;
-        }
-
-        Player targetPlayer = (Player) result.defender;
-        String targetName = targetPlayer.getName();
-
-        addCombatLog(healerName + " healed " + targetName + " for " + result.damageDealt + " HP with Heal.");
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
-    }
-
     private void performEnemyTurn(Entity enemy) {
         Array<Player> candidates = new Array<>();
         for (Player player : playerTeam.getMembers()) {
@@ -785,6 +338,7 @@ public class GameplayScreen implements Screen {
 
         if (result.targetDefeated) {
             addCombatLog(targetName + " was defeated by " + enemyName + ".");
+            handleCharacterDeath(target);
         }
 
         clearTargetSelection();
@@ -798,6 +352,20 @@ public class GameplayScreen implements Screen {
         currentTarget = null;
         if (combatAreaView != null) {
             combatAreaView.clearSelection();
+        }
+    }
+
+    private void handleCharacterDeath(Player defeatedCharacter) {
+        if (defeatedCharacter == null || combatAreaView == null) {
+            return;
+        }
+        
+        // Remove the defeated character from the UI
+        combatAreaView.removeCharacter(defeatedCharacter);
+        
+        // If the defeated character was the selected target, clear selection
+        if (currentTarget == defeatedCharacter) {
+            currentTarget = null;
         }
     }
 

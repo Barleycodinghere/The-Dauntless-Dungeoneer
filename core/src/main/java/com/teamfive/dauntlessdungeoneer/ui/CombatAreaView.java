@@ -82,9 +82,24 @@ public class CombatAreaView {
         }
     }
 
+    public void removeCharacter(Player player) {
+        String unitID = "unit_" + player.getId();
+        Actor unitGroup = root.findActor(unitID);
+        
+        if (unitGroup != null) {
+            unitGroup.remove();
+        }
+        
+        // If the removed character was the selected target, clear selection
+        if (selectedTarget == player) {
+            clearSelection();
+        }
+    }
+
     private Table createCharacterUnit(final Player player, boolean isEnemy, TargetSelectionListener listener) {
         Table unitGroup = new Table();
         String unitID = "unit_" + player.getId();
+        unitGroup.setName(unitID);
 
         Image image = new Image(player.getSprite());
         image.setSize(80, 80);
