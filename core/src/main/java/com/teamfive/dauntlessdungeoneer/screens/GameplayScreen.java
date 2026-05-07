@@ -3,40 +3,21 @@ package com.teamfive.dauntlessdungeoneer;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Table; //can probably change it to import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton; // to reduce the number of imports
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener; // same for utils
-import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.scenes.scene2d.ui.Table; 
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.teamfive.dauntlessdungeoneer.screens.SettingsScreen;
 import com.teamfive.dauntlessdungeoneer.entities.*;
-import com.teamfive.dauntlessdungeoneer.entities.Team;
-import com.teamfive.dauntlessdungeoneer.entities.Player;
 import com.teamfive.dauntlessdungeoneer.components.*;
 import com.badlogic.gdx.scenes.scene2d.ui.ProgressBar;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Stack;
-import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.math.MathUtils;
+
 import java.util.ArrayList;
 import com.teamfive.dauntlessdungeoneer.combat.actions.AttackAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.FireballAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.MagicMissileAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.RecoverAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.HeavyAttackAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.CleaveAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.BlockAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.SmiteAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.MassHealAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.HealAction;
-import com.teamfive.dauntlessdungeoneer.combat.actions.BasicActionHandler;
-import com.teamfive.dauntlessdungeoneer.combat.actions.dpsActions.DpsActionHandler;
-import com.teamfive.dauntlessdungeoneer.combat.actions.tankActions.TankActionHandler;
-import com.teamfive.dauntlessdungeoneer.combat.actions.supportActions.SupportActionHandler;
 import com.teamfive.dauntlessdungeoneer.combat.components.CombatantComponent;
 import com.teamfive.dauntlessdungeoneer.combat.managers.CombatManager;
 import com.teamfive.dauntlessdungeoneer.combat.managers.TurnManager;
@@ -50,15 +31,22 @@ import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 import com.teamfive.dauntlessdungeoneer.ui.CombatAreaView;
 import com.teamfive.dauntlessdungeoneer.ui.CombatLogBox;
 import com.teamfive.dauntlessdungeoneer.ui.SkillPanel;
+import com.teamfive.dauntlessdungeoneer.combat.abilities.Ability;
+import com.teamfive.dauntlessdungeoneer.combat.abilities.AbilityLoadout;
+import com.teamfive.dauntlessdungeoneer.combat.systems.MonsterAISystem;
+
+
+
 
 public class GameplayScreen implements Screen {
     private final GameMain game;
-    private Stage stage;
+    private final Stage stage;
     private CombatAreaView combatAreaView;
     private Table root;
 
-    private Team playerTeam;
-    private Team enemyTeam;
+    private final Team playerTeam;
+    private final Team enemyTeam;
+    private MonsterAISystem monsterAI;
     private Entity currentTarget;
     private Entity lastActor;
     private CombatManager combatManager;
@@ -69,12 +57,6 @@ public class GameplayScreen implements Screen {
     private ProgressBar.ProgressBarStyle manaStyle;
     private Label currentTurnLabel;
     private boolean uiInitialized = false;
-    private boolean hasBeenShownBefore = false;
-
-    private BasicActionHandler basicActionHandler;
-    private DpsActionHandler dpsActionHandler;
-    private TankActionHandler tankActionHandler;
-    private SupportActionHandler supportActionHandler;
 
     public GameplayScreen(GameMain game, Team playerTeam, Team enemyTeam) {
         this.game = game;
@@ -87,119 +69,105 @@ public class GameplayScreen implements Screen {
     public void show() {
         Gdx.input.setInputProcessor(stage);
 
-        if (!hasBeenShownBefore) {
-            if (!uiInitialized) {
-                root = new Table();
-                root.setFillParent(true);
-                stage.addActor(root);
+        if (!uiInitialized) {
+            root = new Table();
+            root.setFillParent(true);
+            stage.addActor(root);
 
-                initializeCombatSystems();
+            initializeCombatSystems();
 
-                // ADDED: Define how the HP bars look (Red fill, Gray background)
-                hpStyle = new ProgressBar.ProgressBarStyle();
-                hpStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
-                hpStyle.background.setMinHeight(20); 
-                hpStyle.knobBefore = game.skin.newDrawable("white", Color.RED); 
-                hpStyle.knobBefore.setMinHeight(20);
+            // ADDED: Define how the HP bars look (Red fill, Gray background)
+            hpStyle = new ProgressBar.ProgressBarStyle();
+            hpStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
+            hpStyle.background.setMinHeight(20); 
+            hpStyle.knobBefore = game.skin.newDrawable("white", Color.RED); 
+            hpStyle.knobBefore.setMinHeight(20);
 
-                // ADDED: Define how the Mana bars look (Blue fill, Gray background)
-                manaStyle = new ProgressBar.ProgressBarStyle();
-                manaStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
-                manaStyle.background.setMinHeight(20);
-                manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
-                manaStyle.knobBefore.setMinHeight(20);
+            // ADDED: Define how the Mana bars look (Blue fill, Gray background)
+            manaStyle = new ProgressBar.ProgressBarStyle();
+            manaStyle.background = game.skin.newDrawable("white", Color.DARK_GRAY);
+            manaStyle.background.setMinHeight(20);
+            manaStyle.knobBefore = game.skin.newDrawable("white", Color.BLUE);
+            manaStyle.knobBefore.setMinHeight(20);
 
-                combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
-                    currentTarget = selectedTarget;
-                    addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-                });
-                combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-                    currentTarget = selectedTarget;
-                    addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-                });
+            combatAreaView = new CombatAreaView(game.skin, hpStyle, manaStyle, selectedTarget -> {
+                currentTarget = selectedTarget;
+                addCombatLog("Target selected: " + ((Player) selectedTarget).getName());
+            });
+            combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
+                currentTarget = selectedTarget;
+                addCombatLog("Target selected: " + ((Player) selectedTarget).getName());
+            });
 
-                skillPanel = new SkillPanel(game.skin, skillIndex -> {
-                    Entity currentActor = combatManager.getCurrentCombatant();
-                    if (!(currentActor instanceof Player)) return;
+            skillPanel = new SkillPanel(game.skin, skillIndex -> {
 
-                    Player player = (Player) currentActor;
-                    
-                    // Update handlers with current target
-                    if (basicActionHandler != null) basicActionHandler.setCurrentTarget(currentTarget);
-                    if (dpsActionHandler != null) dpsActionHandler.setCurrentTarget(currentTarget);
-                    if (tankActionHandler != null) tankActionHandler.setCurrentTarget(currentTarget);
-                    if (supportActionHandler != null) supportActionHandler.setCurrentTarget(currentTarget);
-                    
-                    if (skillIndex == 1) {
-                        if (basicActionHandler != null) basicActionHandler.performBasicAttack();
-                    } else if (skillIndex == 2) {
-                        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                            if (dpsActionHandler != null) dpsActionHandler.performFireball();
-                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                            if (tankActionHandler != null) tankActionHandler.performHeavyAttack();
-                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                            if (supportActionHandler != null) supportActionHandler.performSmite();
-                        }
-                    } else if (skillIndex == 3) {
-                        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                            if (dpsActionHandler != null) dpsActionHandler.performMagicMissile();
-                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                            if (tankActionHandler != null) tankActionHandler.performCleave();
-                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                            if (supportActionHandler != null) supportActionHandler.performMassHeal();
-                        }
-                    } else if (skillIndex == 4) {
-                        if (((PlayerClass) player.getPlayerClass()) == PlayerClass.DPS) {
-                            if (dpsActionHandler != null) dpsActionHandler.performRecover();
-                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.TANK) {
-                            if (tankActionHandler != null) tankActionHandler.performBlock();
-                        } else if (((PlayerClass) player.getPlayerClass()) == PlayerClass.SUPPORT) {
-                            if (supportActionHandler != null) supportActionHandler.performHeal();
-                        }
-                    } else {
-                        addCombatLog("Skill " + skillIndex + " is not ready yet.");
-                    }
-                });
+                Entity currentActor = combatManager.getCurrentCombatant();
+                if (!(currentActor instanceof Player)) return;
+                Player player = (Player) currentActor;
 
-                combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
+                StatsComponent stats = player.getComponent(StatsComponent.class);
+                if (stats == null) return;
 
-                currentTurnLabel = new Label("Current Turn: ", game.skin);
-                currentTurnLabel.setFontScale(1.5f); // Make it bigger
+                if (currentTarget == null) {
+                    addCombatLog("Select a target first.");
+                    return;
+                }
 
-                Table uiArea = new Table();
-                uiArea.add(currentTurnLabel).colspan(2).center().padBottom(10).row();
-                uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
-                uiArea.add(combatLogBox.getActor()).right().top().pad(10);
+                int index = skillIndex - 1;
 
-                root.add(combatAreaView.getRoot()).expand().center().row();
-                root.add(uiArea).height(220).fillX().padBottom(20);
+                Ability ability = player.getAbilityLoadout().get(index);
+                System.out.println("Clicked index: " + skillIndex + " | Ability: " + ability.getName() + " | Cost: " + ability.getManaCost());
 
-                uiInitialized = true;
+                if (ability == null) {
+                    addCombatLog("No ability in slot " + skillIndex);
+                    return;
+                }
+                if (stats.getCurrentMana() < ability.getManaCost()) {
+                    addCombatLog("Not enough mana for " + ability.getName());
+                    return;
+                }
 
-                // Initialize action handlers
-                basicActionHandler = new BasicActionHandler(combatManager, combatAreaView, combatLogBox, 
-                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
-                dpsActionHandler = new DpsActionHandler(combatManager, combatAreaView, combatLogBox,
-                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
-                tankActionHandler = new TankActionHandler(combatManager, combatAreaView, combatLogBox,
-                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
-                supportActionHandler = new SupportActionHandler(combatManager, combatAreaView, combatLogBox,
-                    playerTeam, enemyTeam, this::clearTargetSelection, this::handleCharacterDeath);
-            }
-            hasBeenShownBefore = true;
+                CombatResult result = ability.execute(currentActor, currentTarget, combatManager);
+
+                // DEDUCT MANA
+                stats.useMana(ability.getManaCost());
+
+                addCombatLog(player.getName() + " used " + ability.getName());
+
+                if (result != null && result.targetDefeated) {
+                    handleCharacterDeath((Player) currentTarget);
+                }
+            });
+
+            combatLogBox = new CombatLogBox(game.skin, 360, 180, 6);
+
+            currentTurnLabel = new Label("Current Turn: ", game.skin);
+            currentTurnLabel.setFontScale(1.5f); // Make it bigger
+
+            Table uiArea = new Table();
+            uiArea.add(currentTurnLabel).colspan(2).center().padBottom(10).row();
+            uiArea.add(skillPanel.getActor()).left().top().expandY().pad(10);
+            uiArea.add(combatLogBox.getActor()).right().top().pad(10);
+
+            root.add(combatAreaView.getRoot()).expand().center().row();
+            root.add(uiArea).height(220).fillX().padBottom(20);
+
+            uiInitialized = true;
         }
     }
 
     private void updatePlayerUI(Player player) {
         StatsComponent stats = player.getComponent(StatsComponent.class);
-        if (stats == null) return;
+        if (stats == null || !stats.isAlive()) return;
 
         String unitID = "unit_" + player.getId();
+        Group unitContainer = stage.getRoot().findActor(unitID);
+        if (unitContainer == null) return; 
         
-        ProgressBar hpBar = stage.getRoot().findActor(unitID + "_hpBar");
-        Label hpLabel = stage.getRoot().findActor(unitID + "_hpLabel");
-        ProgressBar manaBar = stage.getRoot().findActor(unitID + "_manaBar");
-        Label manaLabel = stage.getRoot().findActor(unitID + "_manaLabel");
+        ProgressBar hpBar = unitContainer.findActor(unitID + "_hpBar");
+        Label hpLabel = unitContainer.findActor(unitID + "_hpLabel");
+        ProgressBar manaBar = unitContainer.findActor(unitID + "_manaBar");
+        Label manaLabel = unitContainer.findActor(unitID + "_manaLabel");
 
         if (hpBar != null && hpLabel != null) {
             hpBar.setRange(0, stats.getMaxHP());
@@ -233,18 +201,21 @@ public class GameplayScreen implements Screen {
             Entity currentActor = combatManager.getCurrentCombatant();
             if (currentActor != lastActor) {
                 lastActor = currentActor;
-                if (currentActor != null && currentActor.getComponent(CombatantComponent.class).team == CombatantComponent.Team.ENEMY) {
-                    performEnemyTurn(currentActor);
-                    if (currentTurnLabel != null && currentActor instanceof Player) {
-                        currentTurnLabel.setText("Current Turn: " + ((Player) currentActor).getName());
-                    }
-                } else {
-                    addCombatLog("Player turn: choose a target and use Basic Attack.");
-                    if (skillPanel != null && currentActor instanceof Player) {
-                        skillPanel.setPlayer((Player) currentActor);
-                    }
-                    if (currentTurnLabel != null && currentActor instanceof Player) {
-                        currentTurnLabel.setText("Current Turn: " + ((Player) currentActor).getName());
+                if (currentActor != null) {
+                        CombatantComponent cc = currentActor.getComponent(CombatantComponent.class);
+                    if (cc != null && cc.team == CombatantComponent.Team.ENEMY) {
+                        monsterAI.executeTurn(currentActor);
+                        if (currentTurnLabel != null && currentActor instanceof Player) {
+                            currentTurnLabel.setText("Current Turn: " + ((Player) currentActor).getName());
+                        }
+                    } else {
+                        addCombatLog("Player turn: choose a target.");
+                        if (skillPanel != null && currentActor instanceof Player) {
+                            skillPanel.setPlayer((Player) currentActor);
+                        }
+                        if (currentTurnLabel != null && currentActor instanceof Player) {
+                            currentTurnLabel.setText("Current Turn: " + ((Player) currentActor).getName());
+                        }
                     }
                 }
             }
@@ -268,6 +239,15 @@ public class GameplayScreen implements Screen {
         );
 
         combatManager = new CombatManager(new TurnManager(), combatResolver);
+
+        monsterAI = new MonsterAISystem(
+                            combatManager, 
+                            playerTeam, 
+                            this::addCombatLog,
+                            this::handleCharacterDeath 
+        );
+
+
         ArrayList<Entity> combatants = new ArrayList<>();
 
         for (Player player : playerTeam.getMembers()) {
@@ -302,45 +282,6 @@ public class GameplayScreen implements Screen {
         return combatant != null && combatant.team == CombatantComponent.Team.PLAYER;
     }
 
-    private void performEnemyTurn(Entity enemy) {
-        Array<Player> candidates = new Array<>();
-        for (Player player : playerTeam.getMembers()) {
-            CombatantComponent combatant = player.getComponent(CombatantComponent.class);
-            if (combatant != null && combatant.isAlive) {
-                candidates.add(player);
-            }
-        }
-
-        if (candidates.size == 0) {
-            addCombatLog("All players are defeated.");
-            return;
-        }
-
-        Player target = candidates.get(MathUtils.random(candidates.size - 1));
-        CombatResult result = combatManager.performAction(new AttackAction(enemy, target));
-
-        if (result == null) {
-            addCombatLog("Enemy action failed.");
-            return;
-        }
-
-        String enemyName = "Enemy";
-        if (enemy instanceof Player) {
-            enemyName = ((Player) enemy).getName();
-        }
-        String targetName = ((Player) target).getName();
-
-        if (!result.didHit) {
-            addCombatLog(enemyName + " tried to attack " + targetName + " but missed.");
-        } else {
-            addCombatLog(enemyName + " attacked " + targetName + " for " + result.damageDealt + " damage.");
-        }
-
-        if (result.targetDefeated) {
-            addCombatLog(targetName + " was defeated by " + enemyName + ".");
-            handleCharacterDeath(target);
-        }
-    }
 
     private void clearTargetSelection() {
         currentTarget = null;
@@ -353,13 +294,29 @@ public class GameplayScreen implements Screen {
         if (defeatedCharacter == null || combatAreaView == null) {
             return;
         }
+
+        if (combatManager != null) {
+            combatManager.handleDeath(defeatedCharacter);
+        }
         
         // Remove the defeated character from the UI
         combatAreaView.removeCharacter(defeatedCharacter);
+
+        playerTeam.getMembers().remove(defeatedCharacter);
+        enemyTeam.getMembers().remove(defeatedCharacter);
         
         // If the defeated character was the selected target, clear selection
         if (currentTarget == defeatedCharacter) {
-            currentTarget = null;
+            clearTargetSelection();
+        }
+
+        if (enemyTeam.getMembers().isEmpty()) {
+            addCombatLog("VICTORY! All enemies defeated.");
+            game.setScreen(new MainMenuScreen(game));
+        }
+        else if (playerTeam.getMembers().isEmpty()) {
+            addCombatLog("GAME OVER: Your party was wiped out!");
+            game.setScreen(new MainMenuScreen(game));
         }
     }
 

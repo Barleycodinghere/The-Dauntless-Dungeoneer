@@ -55,4 +55,23 @@ public class TurnManager {
             && combatant.isAlive
             && combatant.canAct;
     }
+
+    public void removeCombatant(Entity entity) {
+        int indexToRemove = turnOrder.indexOf(entity);
+        if (indexToRemove == -1) return;
+
+        // Shift index if the dead entity was before the current actor
+        if (indexToRemove < currentTurnIndex) {
+            currentTurnIndex--;
+        }
+
+        turnOrder.remove(indexToRemove);
+
+        // Keep index in bounds
+        if (turnOrder.isEmpty()) {
+            currentTurnIndex = 0;
+        } else {
+            currentTurnIndex %= turnOrder.size();
+        }
+    }
 }

@@ -12,8 +12,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Array;
 import com.teamfive.dauntlessdungeoneer.entities.Player;
+import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,17 +43,17 @@ public class CombatAreaView {
         enemyTable = new Table();
 
         root.add(playerTable).pad(20);
-        root.add().width(100);
+        root.add().width(150);
         root.add(enemyTable).pad(20);
 
-        refresh(new Array<Player>(), new Array<Player>(), listener);
+        refresh(new ArrayList<Player>(), new ArrayList<Player>(), listener);
     }
 
     public Actor getRoot() {
         return root;
     }
 
-    public void refresh(Array<Player> playerTeam, Array<Player> enemyTeam, TargetSelectionListener listener) {
+    public void refresh(ArrayList<Player> playerTeam, ArrayList<Player> enemyTeam, TargetSelectionListener listener) {
         playerTable.clearChildren();
         enemyTable.clearChildren();
         enemyButtons.clear();
@@ -85,10 +85,15 @@ public class CombatAreaView {
     public void removeCharacter(Player player) {
         String unitID = "unit_" + player.getId();
         Actor unitGroup = root.findActor(unitID);
+
+        if (unitGroup == null) {
+            unitGroup = enemyTable.findActor(unitID);
+        }
         
         if (unitGroup != null) {
             unitGroup.remove();
         }
+
         
         // If the removed character was the selected target, clear selection
         if (selectedTarget == player) {
@@ -102,7 +107,6 @@ public class CombatAreaView {
         unitGroup.setName(unitID);
 
         Image image = new Image(player.getSprite());
-        image.setSize(80, 80);
 
         String labelText = isEnemy ? "ENEMY\n" + player.getName() : player.getName();
         final TextButton btn = new TextButton(labelText, skin);
@@ -127,10 +131,10 @@ public class CombatAreaView {
         manaStack.add(manaBar);
         manaStack.add(manaLabel);
 
-        unitGroup.add(image).size(80, 80).padBottom(10).row();
-        unitGroup.add(btn).size(100, 100).row();
-        unitGroup.add(hpStack).width(120).height(20).padTop(10).row();
-        unitGroup.add(manaStack).width(120).height(20).padTop(5).row();
+        unitGroup.add(image).size(200, 200).padBottom(10).row();
+        unitGroup.add(btn).size(140, 45).row();
+        unitGroup.add(hpStack).width(160).height(20).padTop(10).row();
+        unitGroup.add(manaStack).width(160).height(20).padTop(5).row();
 
         if (isEnemy) {
             btn.addListener(new ClickListener() {

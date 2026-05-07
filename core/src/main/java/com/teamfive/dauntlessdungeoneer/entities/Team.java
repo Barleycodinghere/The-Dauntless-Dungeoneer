@@ -1,16 +1,16 @@
 package com.teamfive.dauntlessdungeoneer.entities;
 
-import com.badlogic.gdx.utils.Array;
+import java.util.ArrayList; 
 import com.teamfive.dauntlessdungeoneer.components.PlayerClass;
 
 public class Team {
-    private final Array<Player> members = new Array<>();
+    private final ArrayList<Player> members = new ArrayList<>();
 
     public void addMember(Player player) {
         members.add(player);
     }
 
-    public Array<Player> getMembers() {
+    public ArrayList<Player> getMembers() {
         return members;
     }
     

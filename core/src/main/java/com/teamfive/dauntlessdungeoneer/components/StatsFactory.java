@@ -38,7 +38,7 @@ public class StatsFactory {
 
                 case GOBLIN -> new StatsComponent(
                     20,     //1/4 of DPS HP
-                    12,     //1/4 of DPS Mana
+                    40,     //1/4 of DPS Mana
                     60,     //DPS AC
                     20,     //DPS Speed
                     15,     //DPS ATK
@@ -46,8 +46,8 @@ public class StatsFactory {
                 );
 
                 case DOG -> new StatsComponent(
-                    38,     //1/4 of Tank HP
-                    8,      //1/4 of Tank Mana
+                    40,     //1/4 of Tank HP
+                    40,     //1/4 of Tank Mana
                     15,     //Tank AC
                     4,      //Tank Speed
                     8,      //Tank ATK

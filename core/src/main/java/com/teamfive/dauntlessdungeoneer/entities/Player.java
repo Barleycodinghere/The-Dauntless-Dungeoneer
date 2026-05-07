@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.Color;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
 import com.teamfive.dauntlessdungeoneer.components.*;
+import com.teamfive.dauntlessdungeoneer.combat.abilities.AbilityLoadout;
+import com.teamfive.dauntlessdungeoneer.combat.abilities.AbilityFactory;
 
 public class Player extends Entity {
 
@@ -14,6 +16,7 @@ public class Player extends Entity {
     private final TextureRegion sprite;
     private final CharacterClass playerClass;
     private final String name;
+    private final AbilityLoadout abilityLoadout;
 
     public Player(CharacterClass playerClass) {
         super();
@@ -28,8 +31,10 @@ public class Player extends Entity {
 
         // Default components for a player
         addComponent(StatsComponent.class, StatsFactory.createStats(playerClass));
-        // This ass ths inventory for a player
+        // This adds ths inventory for a player
         addComponent(InventoryComponent.class, new InventoryComponent());
+
+        this.abilityLoadout = AbilityFactory.createLoadout(playerClass);
     }
 
     private static String getDefaultName(CharacterClass characterClass) {
@@ -90,6 +95,10 @@ public class Player extends Entity {
 
     public TextureRegion getSprite() {
         return sprite;
+    }
+
+    public AbilityLoadout getAbilityLoadout() {
+        return abilityLoadout;
     }
 
     public boolean isAlive() {

@@ -51,6 +51,15 @@ public class CombatManager {
         return result;
     }
 
+    public void handleDeath(Entity entity) {
+        CombatantComponent cc = entity.getComponent(CombatantComponent.class);
+        if (cc != null) {
+            cc.isAlive = false;
+        }
+        turnManager.removeCombatant(entity);
+        checkCombatEnd();
+    }
+
     private void checkCombatEnd() {
         boolean playerAlive = false;
         boolean enemyAlive = false;

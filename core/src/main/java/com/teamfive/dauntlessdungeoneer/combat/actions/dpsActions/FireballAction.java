@@ -14,17 +14,27 @@ public class FireballAction extends CombatAction {
 
     @Override
     public CombatResult resolve(CombatResolver resolver) {
-        // Perform 1 attack
+
+        // Base attack
         CombatResult result = resolver.resolveAttack(new AttackAction(actor, target));
 
-        if (result.didHit) {
-            // Double the damage
-            int doubledDamage = result.damageDealt * 2;
-            int newHpAfter = result.targetHpBefore - doubledDamage;
-            boolean defeated = newHpAfter <= 0;
-            return new CombatResult(result.attacker, result.defender, true, doubledDamage, result.targetHpBefore, newHpAfter, defeated);
-        } else {
+        if (!result.didHit) {
             return result;
         }
+
+        // Fireball effect: double damage
+        int doubledDamage = result.damageDealt * 2;
+        int newHpAfter = result.targetHpBefore - doubledDamage;
+        boolean defeated = newHpAfter <= 0;
+
+        return new CombatResult(
+                result.attacker,
+                result.defender,
+                true,
+                doubledDamage,
+                result.targetHpBefore,
+                newHpAfter,
+                defeated
+        );
     }
 }
