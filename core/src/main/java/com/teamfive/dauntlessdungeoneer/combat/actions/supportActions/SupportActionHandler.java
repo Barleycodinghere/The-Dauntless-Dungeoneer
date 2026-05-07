@@ -5,27 +5,19 @@ import com.teamfive.dauntlessdungeoneer.entities.Team;
 import com.teamfive.dauntlessdungeoneer.combat.managers.CombatManager;
 import com.teamfive.dauntlessdungeoneer.combat.results.CombatResult;
 import com.teamfive.dauntlessdungeoneer.ecs.Entity;
-import com.teamfive.dauntlessdungeoneer.ui.CombatAreaView;
 import com.teamfive.dauntlessdungeoneer.ui.CombatLogBox;
 
 public class SupportActionHandler {
     private final CombatManager combatManager;
-    private final CombatAreaView combatAreaView;
     private final CombatLogBox combatLogBox;
-    private final Team playerTeam;
-    private final Team enemyTeam;
     private final Runnable clearTargetSelection;
     private final java.util.function.Consumer<Player> handleCharacterDeath;
     private Entity currentTarget;
 
-    public SupportActionHandler(CombatManager combatManager, CombatAreaView combatAreaView, CombatLogBox combatLogBox,
-                                Team playerTeam, Team enemyTeam, Runnable clearTargetSelection,
+    public SupportActionHandler(CombatManager combatManager, CombatLogBox combatLogBox, Runnable clearTargetSelection,
                                 java.util.function.Consumer<Player> handleCharacterDeath) {
         this.combatManager = combatManager;
-        this.combatAreaView = combatAreaView;
         this.combatLogBox = combatLogBox;
-        this.playerTeam = playerTeam;
-        this.enemyTeam = enemyTeam;
         this.clearTargetSelection = clearTargetSelection;
         this.handleCharacterDeath = handleCharacterDeath;
     }
@@ -163,10 +155,6 @@ public class SupportActionHandler {
 
     private void refreshUI() {
         clearTargetSelection.run();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
     }
 
     private void addCombatLog(String message) {

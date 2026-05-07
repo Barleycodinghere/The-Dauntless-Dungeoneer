@@ -340,12 +340,6 @@ public class GameplayScreen implements Screen {
             addCombatLog(targetName + " was defeated by " + enemyName + ".");
             handleCharacterDeath(target);
         }
-
-        clearTargetSelection();
-        combatAreaView.refresh(playerTeam.getMembers(), enemyTeam.getMembers(), selectedTarget -> {
-            currentTarget = selectedTarget;
-            addCombatLog("Target selected: " + ((Player) selectedTarget).getName() + ". Press Basic Attack.");
-        });
     }
 
     private void clearTargetSelection() {
