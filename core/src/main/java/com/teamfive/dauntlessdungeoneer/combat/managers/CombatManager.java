@@ -85,7 +85,7 @@ public class CombatManager {
                         InventoryComponent inventory =
                             e.getComponent(InventoryComponent.class);
 
-                        // roll for loot
+                        // rolling for loot
                         if (LootGenerator.rollDropChance(90)) {
 
                             Item loot = LootGenerator.generateRandomItem();
