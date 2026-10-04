@@ -118,17 +118,15 @@ public class TeamSelectScreen implements Screen {
         // ======================
         // LAYOUT
         // ======================
-        root.add(title).padBottom(20).row();
+        root.add(title).colspan(3).padBottom(20).row();
 
-        root.add(tankBtn).width(200).height(50).pad(5).row();
-        root.add(dpsBtn).width(200).height(50).pad(5).row();
+        root.add(tankBtn).width(200).height(50).pad(5);
+        root.add(dpsBtn).width(200).height(50).pad(5);
         root.add(supportBtn).width(200).height(50).pad(5).row();
 
-        root.add(removeBtn).width(200).height(50).padTop(15).row();
-
-        root.add(teamLabel).padTop(20).row();
-
-        root.add(startBtn).width(250).height(60).padTop(30);
+        root.add(removeBtn).colspan(3).width(200).height(50).padTop(15).row();
+        root.add(teamLabel).colspan(3).padTop(20).row();
+        root.add(startBtn).colspan(3).width(250).height(60).padTop(30);
     }
 
     private void addToTeam(Player player) {

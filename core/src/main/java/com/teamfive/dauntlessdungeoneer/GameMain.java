@@ -27,6 +27,15 @@ public class GameMain extends Game {
                 Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
             }
         }
+
+        if (Gdx.input.isKeyJustPressed(com.badlogic.gdx.Input.Keys.ESCAPE)) {
+            if (this.getScreen() instanceof com.teamfive.dauntlessdungeoneer.screens.TeamSelectScreen) {
+                // Store the current screen, switch, then clean up the old one
+                com.badlogic.gdx.Screen oldScreen = this.getScreen();
+                this.setScreen(new MainMenuScreen(this));
+                if (oldScreen != null) oldScreen.dispose();
+            }
+        }
         // This is crucial! It tells the current screen to render
         super.render();
     }
